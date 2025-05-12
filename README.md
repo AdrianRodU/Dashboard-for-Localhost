@@ -1,4 +1,3 @@
-```markdown
 # LocalHost Dashboard 📂⚡
 
 **Git-Local** es un panel de control visual hecho en PHP para desarrolladores que trabajan en local.
@@ -71,7 +70,6 @@ Este proyecto fue creado por **Adrián** para mejorar la experiencia de desarrol
 ---
 
 > Siéntete libre de adaptar este panel a tu flujo de trabajo personal. ¡Y no olvides hacer tu propio fork o dejar una estrellita si te inspira!
-```
 
 Este panel está pensado para desarrolladores que manejan múltiples proyectos en su entorno local y desean **orden visual, velocidad y personalización**.
 
