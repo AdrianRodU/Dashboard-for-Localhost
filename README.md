@@ -32,23 +32,26 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 - **JavaScript Vanilla**
 - **SweetAlert2** - modales
 - **FontAwesome** - íconos generales
-- **Bootstrap v5.3** - 
+- **Bootstrap v5.3** -
 
 ---
 
 ## 📂 Estructura del proyecto
 
 ```markdown
-📁 Git-Local/
-├── index.php → Interfaz principal
-├── abrir-carpeta.php → Abre carpetas en el explorador
+📁 Root - Localhost/
+├── index.php → Interfaz principal del panel
+├── abrir-carpeta.php → Abre carpetas directamente en el explorador de Windows
 ├── ver-archivos.php → Muestra subarchivos de una carpeta
-├── vista-previa.php → Modal con contenido e íconos personalizados
-├── prueba.php → Archivo de prueba
-├── .htaccess → Configuraciones del servidor local
-├── css/ → Estilos personalizados
-├── js/ → Funciones JavaScript
-└── img/ → Imágenes y visuales
+├── vista-previa.php → Modal para ver archivos e íconos personalizados
+├── .htaccess → Configuraciones de acceso para Apache
+├── assets/ → Carpeta de recursos visuales y lógicos (ver más abajo)
+│   ├── css/ → Estilos personalizados del panel
+│   ├── js/ → Scripts de interacción (localStorage, botones, modales, etc.)
+│   └── img/ → Vista previa del Dashboard
+└── (oculto) → La carpeta assets está oculta desde el código en el index.php para no saturar la interfaz visual
+
+🧼 Nota: La carpeta /assets se oculta automáticamente desde el sistema porque no es relevante en la navegación diaria. Solo se accede a través del código fuente.
 ```
 
 ---
