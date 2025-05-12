@@ -1,6 +1,6 @@
-# Git-Local 📂⚡
+# Localhost Dashboard 📂⚡
 
-Este es un proyecto personal hecho en PHP para mejorar la experiencia de desarrollo en local usando XAMPP.  
+Este es un proyecto personal hecho en PHP para mejorar la experiencia de desarrollo en local usando XAMPP.
 Funciona como un **panel visual personalizado** que organiza y muestra las carpetas de `htdocs` de forma más clara y funcional.
 
 ---
@@ -41,4 +41,8 @@ Este panel está pensado para desarrolladores que manejan múltiples proyectos e
 
 ---
 
-> Desarrollado por **Adrián** para potenciar la organización y productividad en desarrollo web local.
+> Desarrollado para potenciar la organización y productividad en desarrollo web local.
+
+---
+
+con ❤️ por **Adrián R.** 😊
