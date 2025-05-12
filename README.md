@@ -21,7 +21,7 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 
 > Puedes ver una parte del sistema en acción:
 
-![Preview](img/preview.gif)
+![Preview](assets/img/preview.gif)
 
 ---
 
