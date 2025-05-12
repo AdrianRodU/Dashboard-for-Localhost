@@ -19,7 +19,7 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 
 ## 📸 Vista previa
 
-> Puedes subir aquí una imagen o GIF para mostrar tu panel en acción:
+> Puedes ver una parte del sistema en acción:
 
 ![Preview](img/preview.gif)
 
