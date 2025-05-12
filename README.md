@@ -40,6 +40,7 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 
 ## 📂 Estructura del proyecto
 
+```markdown
 📁 Git-Local/
 ├── index.php → Interfaz principal
 ├── abrir-carpeta.php → Abre carpetas en el explorador
@@ -50,7 +51,7 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 ├── css/ → Estilos personalizados
 ├── js/ → Funciones JavaScript
 └── img/ → Imágenes y visuales
-
+```
 ---
 
 ## ⚙️ Requisitos
