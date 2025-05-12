@@ -540,7 +540,10 @@ function crearCarpeta() {
                     const carpetasFiltradas = items
                         .filter(item => item.endsWith("/"))
                         .map(c => c.slice(0, -1))
-                        .filter(nombre => !carpetasOcultasSistema.includes(nombre));
+                        .filter(nombre =>
+                            !carpetasOcultasSistema.includes(nombre) &&
+                            !nombre.startsWith('.') // <-- esto oculta cualquier carpeta tipo .git, .vscode, etc.
+                        );
 
                     window.carpetasDisponibles = carpetasFiltradas;
                     renderCarpetas(nombreCarpeta);
@@ -592,9 +595,12 @@ function renameFolder(folder) {
                 .then((res) => res.json())
                 .then((items) => {
                     const carpetasFiltradas = items
-                        .filter((item) => item.endsWith("/"))
-                        .map((c) => c.slice(0, -1))
-                        .filter(nombre => !carpetasOcultasSistema.includes(nombre))
+                        .filter(item => item.endsWith("/"))
+                        .map(c => c.slice(0, -1))
+                        .filter(nombre =>
+                            !carpetasOcultasSistema.includes(nombre) &&
+                            !nombre.startsWith('.') // <-- esto oculta cualquier carpeta tipo .git, .vscode, etc.
+                        );
                     window.carpetasDisponibles = carpetasFiltradas;
                     renderCarpetas(nuevoNombre);
 
@@ -654,7 +660,10 @@ function deleteFolder(folder) {
                     const carpetasFiltradas = items
                         .filter(item => item.endsWith("/"))
                         .map(c => c.slice(0, -1))
-                        .filter(nombre => !carpetasOcultasSistema.includes(nombre));
+                        .filter(nombre =>
+                            !carpetasOcultasSistema.includes(nombre) &&
+                            !nombre.startsWith('.') // <-- esto oculta cualquier carpeta tipo .git, .vscode, etc.
+                        );
 
                     window.carpetasDisponibles = carpetasFiltradas;
                     renderCarpetas();

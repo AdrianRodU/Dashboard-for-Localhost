@@ -53,14 +53,15 @@ function eliminarCarpeta($carpeta)
                                   $dir = __DIR__;
                                   $archivos = scandir($dir);
                                   $carpetas = [];
-                                  $carpetasOcultas = ['git', 'assets'];
+                                  $carpetasOcultas = ['assets'];
                                   foreach ($archivos as $archivo) {
                                     $ruta = $dir . DIRECTORY_SEPARATOR . $archivo;
                                     if (
                                       $archivo !== '.' &&
                                       $archivo !== '..' &&
                                       is_dir($ruta) &&
-                                      !in_array($archivo, $carpetasOcultas)
+                                      !in_array($archivo, $carpetasOcultas) &&
+                                      $archivo[0] !== '.' // <-- esto oculta todas las carpetas que empiecen con punto
                                     ) {
                                       $carpetas[] = $archivo;
                                     }
