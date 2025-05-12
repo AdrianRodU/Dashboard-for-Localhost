@@ -60,8 +60,8 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 - PHP 7.4 o superior
 - Un servidor local como:
   - [XAMPP](https://www.apachefriends.org/)
-  - [WAMP] (https://www.wampserver.com/en/)
-  - [MAMP] (https://www.mamp.info/en/windows/)
+  - [WAMP](https://www.wampserver.com/en/)
+  - [MAMP](https://www.mamp.info/en/windows/)
   - [Laragon](https://laragon.org/)
 - Navegador moderno (Chrome, Firefox, Edge, etc.)
 
