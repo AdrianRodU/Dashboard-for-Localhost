@@ -50,9 +50,9 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 │   ├── js/ → Scripts de interacción (localStorage, botones, modales, etc.)
 │   └── img/ → Vista previa del Dashboard
 └── (oculto) → La carpeta assets está oculta desde el código en el index.php para no saturar la interfaz visual
+```
 
 🧼 Nota: La carpeta /assets se oculta automáticamente desde el sistema porque no es relevante en la navegación diaria. Solo se accede a través del código fuente.
-```
 
 ---
 
