@@ -1,7 +1,7 @@
-# LocalHost Dashboard 📂⚡
+# 📂 LocalHost Dashboard ⚡
 
-**Git-Local** es un panel de control visual hecho en PHP para desarrolladores que trabajan en local.
-Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`), ocultar contenido innecesario y destacar proyectos favoritos.
+**LocalHost Dashboard** es un panel de control visual hecho en PHP para desarrolladores que trabajan en local.
+Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`), ocultar contenido innecesario y destacar proyectos favoritos. Además contiene efectos visuales para mejorar la experiencia.
 
 ---
 
@@ -23,18 +23,16 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 
 ![Preview](img/preview.gif)
 
-📌 Solo reemplaza `img/preview.gif` con tu imagen real. Puedes subirla directamente a la carpeta `/img` del proyecto y hacer commit.
-
 ---
 
 ## 🧰 Tecnologías utilizadas
 
 - **PHP** (funciona con cualquier servidor local compatible)
-- **HTML + CSS + Bootstrap**
+- **HTML + CSS**
 - **JavaScript Vanilla**
-- **SweetAlert2** para modales
-- **@file-icons/css** para íconos de archivos
-- **FontAwesome** para íconos generales
+- **SweetAlert2** - modales
+- **FontAwesome** - íconos generales
+- **Bootstrap v5.3** - 
 
 ---
 
@@ -52,6 +50,7 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 ├── js/ → Funciones JavaScript
 └── img/ → Imágenes y visuales
 ```
+
 ---
 
 ## ⚙️ Requisitos
@@ -66,17 +65,11 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 
 ## 🧠 Nota del autor
 
-Este proyecto fue creado por **Adrián** para mejorar la experiencia de desarrollo local, tener todo a la mano y trabajar de forma limpia, visual y ordenada desde el navegador.
+Este proyecto fue creado para mejorar la experiencia de desarrollo local, tener todo a la mano y trabajar de forma limpia, visual y ordenada desde el navegador; para desarrolladores que manejan múltiples proyectos en su entorno local y desean **orden visual, velocidad y personalización**.
 
 ---
 
 > Siéntete libre de adaptar este panel a tu flujo de trabajo personal. ¡Y no olvides hacer tu propio fork o dejar una estrellita si te inspira!
-
-Este panel está pensado para desarrolladores que manejan múltiples proyectos en su entorno local y desean **orden visual, velocidad y personalización**.
-
----
-
-> Desarrollado para potenciar la organización y productividad en desarrollo web local.
 
 ---
 
