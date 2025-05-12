@@ -1,0 +1,3 @@
+# Forzar codificación UTF-8 para todos los archivos comunes
+AddDefaultCharset UTF-8
+AddCharset UTF-8 .js .css .json .txt .html .php

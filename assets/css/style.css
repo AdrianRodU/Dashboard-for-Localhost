@@ -1,0 +1,525 @@
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+  color: #333;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+}
+
+body.dark .card {
+  background-color: #2c2c2c;
+  color: #f0f0f0;
+}
+
+body.dark .favorites-sidebar {
+  background-color: #2c2c2c;
+  color: #fff;
+}
+
+body.dark .modal-content {
+  background-color: #333;
+  color: #fff;
+}
+
+.card {
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease,
+    background-color 0.3s ease;
+}
+
+/* Solo en modo claro */
+body:not(.dark) .card:hover {
+  background-color: rgba(241, 241, 241, 0.63);
+  /* Azul clarito suave */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 🎨 Hover sobre los íconos de acción */
+.card i {
+  transition: color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+  color: #007bff;
+}
+
+/* 🎨 Hover individual por ícono */
+
+.card i.fa-folder-open:hover {
+  color: rgb(207, 7, 190);
+  /* Verde - editar */
+  transform: scale(1.15);
+}
+
+.card i.fa-pencil-alt:hover {
+  color: rgb(7, 109, 31);
+  /* Verde - editar */
+  transform: scale(1.15);
+}
+
+.card i.fa-trash:hover {
+  color: #dc3545;
+  /* Rojo - eliminar */
+  transform: scale(1.15);
+}
+
+.card i.fa-star:hover {
+  color: #ffc107;
+  /* Amarillo - favorito */
+  transform: scale(1.15);
+}
+
+.card i.fa-eye-slash:hover {
+  color: #6c757d;
+  /* Gris oscuro - ocultar (modo claro) */
+  transform: scale(1.15);
+}
+
+/* Ajuste para modo oscuro */
+body.dark .card i.fa-eye-slash:hover {
+  color: #ffffff;
+}
+
+/* 🎨 Ajuste para ícono ocultar en modo oscuro */
+body.dark .card i.fa-eye-slash:hover {
+  color: #ffffff;
+  /* Blanco en modo oscuro */
+}
+
+/* BOTÓN HAMBURGUESA: borde blanco en modo oscuro */
+body.dark .navbar-toggler {
+  border-color: #fff;
+}
+
+/* BOTÓN DE CIERRE DEL OFFCANVAS */
+body.dark .offcanvas .btn-close {
+  filter: invert(1);
+}
+
+body.dark .custom-offcanvas {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+}
+
+body.dark .custom-offcanvas .btn {
+  border-color: #555;
+  color: #f0f0f0;
+}
+
+body.dark .custom-offcanvas .btn:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+body.dark .navbar-toggler {
+  border-color: #ccc;
+}
+
+body.dark .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='white' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+  background-color: transparent !important;
+}
+
+/* Hace visible la X del modal en modo oscuro */
+body.dark .modal .btn-close {
+  filter: invert(1);
+}
+
+/* Elimina fondo oscuro del icono hamburguesa en modo claro */
+.navbar-toggler-icon {
+  background-color: transparent !important;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  transition: background-color 0.3s ease;
+}
+
+/* Asegura hover limpio en modo claro */
+body:not(.dark) .navbar-toggler:hover .navbar-toggler-icon {
+  background-color: transparent !important;
+}
+
+/* Estilo limpio para el botón hamburguesa */
+.navbar-toggler {
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Hover en modo claro */
+body:not(.dark) .navbar-toggler:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+  /* MÁS SUAVE */
+  border-color: #888;
+}
+
+/* Estilo y hover en modo oscuro */
+body.dark .navbar-toggler {
+  border-color: #fff;
+}
+
+body.dark .navbar-toggler:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  /* fondo suave */
+  border-color: #fff;
+}
+
+/* Icono hamburguesa en modo claro */
+body:not(.dark) .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='gray' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* (Opcional) Pequeño efecto de rebote */
+.card i:active {
+  transform: scale(0.95);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.favorites-sidebar {
+  position: fixed;
+  right: -250px;
+  top: 0;
+  width: 250px;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-left: 2px solid #ddd;
+  transition: right 0.3s ease;
+  z-index: 2000;
+}
+
+.favorites-sidebar.show {
+  right: 0;
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.divider {
+  border: none;
+  border-top: 2px dashed #ccc;
+  margin: 0px 0px 15px 0px;
+}
+
+.alert {
+  animation: fadeAlert 0.4s ease-in-out;
+}
+
+@keyframes fadeAlert {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 992px) {
+  .contenedor-central {
+    max-width: 980px;
+  }
+}
+
+.swal2-toast.custom-success {
+  background-color: #28a745 !important;
+  /* Verde Bootstrap */
+  color: white;
+}
+
+.swal2-toast.custom-error {
+  background-color: #dc3545 !important;
+  /* Rojo */
+  color: white;
+}
+
+.swal2-toast.custom-warning {
+  background-color: #e0a800 !important;
+  color: white;
+}
+
+.swal2-toast.custom-warning .swal2-warning {
+  color: white !important;
+}
+
+.swal2-toast.custom-info {
+  background-color: #17a2b8 !important;
+  /* Azul Bootstrap tipo "info" */
+  color: white;
+}
+
+.swal2-toast.custom-info .swal2-icon {
+  color: white !important;
+}
+
+.carpeta-nueva {
+  animation: resaltadoNuevo 0.4s ease-in-out;
+  background-color: #d4edda !important;
+  border: 2px solid #28a745;
+}
+
+@keyframes resaltadoNuevo {
+  0% {
+    background-color: #c3e6cb;
+    transform: scale(1.03);
+  }
+
+  100% {
+    background-color: #d4edda;
+    transform: scale(1);
+  }
+}
+
+/* 💡 Estilo resaltado en MODO CLARO */
+body:not(.dark) .carpeta-nueva {
+  background-color: #d4edda !important;
+  /* verde claro */
+  border: 2px solid #28a745;
+  animation: resaltadoNuevo 0.4s ease-in-out;
+}
+
+/* 💡 Estilo resaltado en MODO OSCURO */
+body.dark .carpeta-nueva {
+  background-color: #305c3e !important;
+  /* verde oscuro */
+  border: 2px solid #50fa7b;
+  animation: resaltadoNuevo 0.4s ease-in-out;
+}
+
+@keyframes resaltadoNuevo {
+  0% {
+    transform: scale(1.03);
+    filter: brightness(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes saltito {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  30% {
+    transform: translateY(-4px);
+  }
+
+  50% {
+    transform: translateY(2px);
+  }
+
+  70% {
+    transform: translateY(-2px);
+  }
+
+  90% {
+    transform: translateY(1px);
+  }
+}
+
+body:not(.dark) .carpeta-nueva {
+  background-color: #d4edda !important;
+  border: 2px solid #28a745;
+  animation: resaltadoNuevo 0.4s ease-in-out,
+    saltito 0.6s ease-in-out 0s infinite;
+}
+
+body.dark .carpeta-nueva {
+  background-color: #305c3e !important;
+  border: 2px solid #50fa7b;
+  animation: resaltadoNuevo 0.4s ease-in-out,
+    saltito 0.6s ease-in-out 0s infinite;
+}
+
+@keyframes resaltadoInfo {
+  0% {
+    transform: scale(1.03);
+    filter: brightness(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+/* Modo claro */
+body:not(.dark) .carpeta-renombrada {
+  background-color: #cff4fc !important;
+  /* Celeste info claro */
+  border: 2px solid #0dcaf0;
+  animation: resaltadoInfo 0.4s ease-in-out,
+    saltito 1.2s ease-in-out 0s infinite;
+}
+
+/* Modo oscuro */
+body.dark .carpeta-renombrada {
+  background-color: #175a63 !important;
+  /* Celeste oscuro */
+  border: 2px solid #0dcaf0;
+  animation: resaltadoInfo 0.4s ease-in-out,
+    saltito 1.2s ease-in-out 0s infinite;
+}
+
+/* 🛑 Pausar animación de salto al pasar el mouse */
+.card.carpeta-nueva:hover,
+.card.carpeta-renombrada:hover {
+  animation-play-state: paused;
+}
+
+.swal2-modal-carpetas {
+  max-width: 600px !important;
+  padding: 1.5rem;
+  font-family: "Poppins", sans-serif;
+}
+
+.swal2-modal-carpetas .btn {
+  transition: 0.2s;
+}
+
+.swal2-modal-carpetas .btn:hover {
+  transform: scale(1.05);
+}
+
+/* Estilo del modal Bootstrap en modo oscuro */
+body.dark .modal-content {
+  background-color: #2c2c2c;
+  color: #f0f0f0;
+  border: 1px solid #444;
+}
+
+body.dark .modal-header,
+body.dark .modal-footer {
+  border-color: #444;
+}
+
+body.dark .btn-close {
+  filter: invert(1);
+}
+
+body.dark .list-group-item {
+  background-color: #2c2c2c;
+  color: #f0f0f0;
+  border-color: #444;
+}
+
+body.dark .btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+body.dark .btn-outline-primary:hover {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* 💎 Breadcrumb modernizado */
+.breadcrumb {
+  background-color: transparent;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: "›";
+  color: var(--bs-secondary);
+  font-weight: bold;
+}
+
+.breadcrumb-item a {
+  text-decoration: none;
+  color: inherit;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.breadcrumb-item.active {
+  font-weight: bold;
+  color: var(--bs-body-color);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+body.dark .breadcrumb-item.active {
+  color: #f0f0f0;
+}
+
+.breadcrumb i {
+  color: #6c757d;
+}
+
+body.dark .breadcrumb i {
+  color: #ccc;
+}
+
+/* Estilo para el mensaje en modo claro */
+#mensajeSinFavoritos,
+#mensajeSinLocales {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  border: 1px dashed #ccc;
+}
+
+/* Estilo para el mensaje en modo oscuro */
+body.dark #mensajeSinFavoritos,
+body.dark #mensajeSinLocales {
+  background-color: rgba(255, 255, 255, 0.07);
+  /* un poco más claro */
+  border: 1px dashed #888;
+  /* más contraste */
+  color: rgba(240, 240, 240, 0.3) !important;
+  /* texto más blanco */
+}
+
+body.dark #mensajeSinFavoritos i,
+body.dark #mensajeSinLocales i {
+  color: #ccc;
+  opacity: 0.2;
+}
+
+body.dark .card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
