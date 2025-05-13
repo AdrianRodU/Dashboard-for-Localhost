@@ -1412,23 +1412,21 @@ function quitarTodosFavoritos() {
     document.cookie = "favorites=[]; path=/";
 
     updateFavorites(); // limpia favoritos
-    renderCarpetas(carpetasQuitadas); // ⚠️ Aquí pasamos las que deben animarse
+    renderCarpetas();  // no pasamos animaciones para evitar doble clase
 
-    // Agregar también .fade-in a cada tarjeta
+    // ✅ Aplicamos .carpeta-nueva manualmente con delay controlado
     setTimeout(() => {
         carpetasQuitadas.forEach((folder) => {
             const tarjeta = document.querySelector(`[data-folder="${folder}"]`);
             if (tarjeta) {
-                tarjeta.classList.add("fade-in", "carpeta-nueva");
-                setTimeout(() => tarjeta.classList.remove("fade-in", "carpeta-nueva"), 4000);
+                tarjeta.classList.add("carpeta-nueva");
+                setTimeout(() => tarjeta.classList.remove("carpeta-nueva"), 4000);
             }
         });
-    }, 300);
+    }, 100);
 
     showToast("Todos los favoritos han sido eliminados.", "error", "custom-error");
 }
-
-
 
 // ============================== //
 // 💻 Integración con el sistema
