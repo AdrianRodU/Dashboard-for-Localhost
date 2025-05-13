@@ -523,3 +523,37 @@ body.dark .card:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
+
+@keyframes entradaSuave {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animacion-saludo {
+  animation: entradaSuave 0.5s ease-out;
+}
+
+@keyframes shake-error {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-10px);
+  }
+  40%,
+  80% {
+    transform: translateX(10px);
+  }
+}
+
+.swal2-popup.shake-error {
+  animation: shake-error 0.4s ease !important;
+}

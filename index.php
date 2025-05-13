@@ -53,7 +53,7 @@ function eliminarCarpeta($carpeta)
                                   $dir = __DIR__;
                                   $archivos = scandir($dir);
                                   $carpetas = [];
-                                  $carpetasOcultas = ['assets'];
+                                  $carpetasOcultas = ['dashboard', 'assets', 'img', 'webalizer', 'xampp'];
                                   foreach ($archivos as $archivo) {
                                     $ruta = $dir . DIRECTORY_SEPARATOR . $archivo;
                                     if (
@@ -82,7 +82,7 @@ function eliminarCarpeta($carpeta)
     <header class="mb-4">
       <div class="container-fluid px-0">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-          <h1 id="saludoAdrian" class="h3 mb-0" tabindex="-1">Bienvenido, Adrián 👋</h1>
+          <h1 id="saludoInicial" class="h3 mb-0" tabindex="-1">¡Bienvenido! 👋</h1>
           <!-- Botón hamburguesa visible solo en móviles -->
           <button class="btn btn-outline-dark d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral">
             <span class="navbar-toggler-icon"></span>
@@ -101,6 +101,7 @@ function eliminarCarpeta($carpeta)
             <a class="btn btn-success" href="#" onclick="abrirRaizLocalhost()" title="Abrir carpeta raíz de localhost">
               <i class="fas fa-folder-open me-1"></i> Localhost
             </a>
+            <button onclick="cambiarNombreUsuario()" class="btn btn-outline-secondary btn-sm">Editar saludo</button>
             <button class="btn btn-secondary" onclick="mostrarOcultas()" title="Ver carpetas ocultas">
               👁️ Ver Ocultos
             </button>

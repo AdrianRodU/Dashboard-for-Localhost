@@ -101,6 +101,8 @@ document.addEventListener("DOMContentLoaded", () => {
     setInterval(() => {
         document.getElementById("time").textContent = new Date().toLocaleString();
     }, 1000);
+
+
 });
 
 // ============================== //
@@ -154,20 +156,170 @@ function obtenerIconoPorExtension(extension) {
 function actualizarSaludo() {
     const ahora = new Date();
     const hora = ahora.getHours();
-    const saludoEl = document.getElementById("saludoAdrian");
-    let saludo = "Hola, Adrián 👋";
-    if (hora >= 5 && hora < 12) {
-        saludo = "Buenos días, Adrián ☀️";
-    } else if (hora >= 12 && hora < 19) {
-        saludo = "Buenas tardes, Adrián 🌞";
-    } else {
-        saludo = "Buenas noches, Adrián 🌙";
+    const saludoEl = document.getElementById("saludoInicial");
+
+    const claveNombre = `nombreUsuario-${location.pathname}`;
+    let nombre = localStorage.getItem(claveNombre);
+
+    // Si es la primera vez, mostrar el modal y luego guardar
+    if (!nombre) {
+        Swal.fire({
+            title: '¡Bienvenido!',
+            text: '¿Cuál es tu nombre? 👋',
+            input: 'text',
+            inputPlaceholder: 'Tu nombre',
+            confirmButtonText: 'Guardar',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            inputValidator: (value) => {
+                if (!value.trim()) {
+                    // Aplicar animación shake manual
+                    const modal = Swal.getPopup();
+                    if (modal) {
+                        modal.classList.remove("shake-error");
+                        void modal.offsetWidth;
+                        modal.classList.add("shake-error");
+                    }
+                    return 'Por favor, escribe tu nombre';
+                }
+            }
+        }).then((result) => {
+            const valor = result.value?.trim();
+            if (valor) {
+                localStorage.setItem(claveNombre, valor);
+                actualizarSaludo();
+                showToast(`Nombre guardado como "${valor}"`, "success", "custom-success");
+            }
+        });
+
+        return; // salimos hasta que el usuario complete
     }
+
+    let saludo = `Hola, ${nombre} 👋`;
+    if (hora >= 5 && hora < 12) {
+        saludo = `Buenos días, ${nombre} ☀️`;
+    } else if (hora >= 12 && hora < 19) {
+        saludo = `Buenas tardes, ${nombre} 🌞`;
+    } else {
+        saludo = `Buenas noches, ${nombre} 🌙`;
+    }
+
     if (saludoEl) saludoEl.textContent = saludo;
 }
 
 document.addEventListener("DOMContentLoaded", actualizarSaludo);
 setInterval(actualizarSaludo, 60000); // cada 60 segundos
+
+// Modifica el nombre del usuario para dar un saludo dinámico según la hora del día
+function cambiarNombreUsuario() {
+    const clave = `nombreUsuario-${location.pathname}`;
+    const actual = localStorage.getItem(clave) || "";
+
+    Swal.fire({
+        title: 'Configurar saludo',
+        html: `
+        <input id="nuevoNombreInput" class="swal2-input" placeholder="Tu nombre" value="${actual}">
+        ${actual ? `
+          <button id="borrarNombreBtn" class="swal2-styled swal2-cancel mt-2" style="background:#e74c3c;">
+            Borrar nombre
+          </button>
+        ` : ""}
+      `,
+        showCancelButton: true,
+        showConfirmButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        didOpen: () => {
+            const btnBorrar = document.getElementById("borrarNombreBtn");
+
+            if (btnBorrar) {
+                btnBorrar.addEventListener("click", () => {
+                    localStorage.removeItem(clave);
+                    Swal.close();
+                    showToast("Se eliminó el nombre personalizado", "error", "custom-error");
+
+                    const saludoEl = document.getElementById("saludoInicial");
+                    if (saludoEl) {
+                        saludoEl.textContent = "¡Bienvenido! 👋";
+                        // saludoEl.classList.add("animacion-saludo");
+                        setTimeout(() => saludoEl.classList.remove("animacion-saludo"), 600);
+                    }
+
+                    setTimeout(() => {
+                        actualizarSaludo();
+                    }, 2000);
+                });
+            }
+
+            // ✅ Habilitar Enter
+            const input = document.getElementById("nuevoNombreInput");
+            if (input) {
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        Swal.clickConfirm();
+                    }
+                });
+            }
+        },
+
+        preConfirm: () => {
+            const inputEl = document.getElementById("nuevoNombreInput");
+            const nuevo = inputEl.value.trim();
+
+            if (!nuevo) {
+                Swal.showValidationMessage("Por favor, escribe tu nombre o usa 'Borrar nombre'");
+
+                inputEl.style.border = "1px solid #dc3545";
+
+                const modal = document.querySelector('.swal2-popup');
+                if (modal) {
+                    modal.classList.remove("shake-error");
+                    void modal.offsetWidth;
+                    modal.classList.add("shake-error");
+                }
+
+                return false;
+            }
+
+            // 🔁 Nueva validación: nombre igual al actual
+            const actual = localStorage.getItem(`nombreUsuario-${location.pathname}`) || "";
+            if (nuevo === actual) {
+                Swal.showValidationMessage("El nombre ingresado es el mismo que el actual");
+
+                inputEl.style.border = "1px solid #dc3545";
+
+                const modal = document.querySelector('.swal2-popup');
+                if (modal) {
+                    modal.classList.remove("shake-error");
+                    void modal.offsetWidth;
+                    modal.classList.add("shake-error");
+                }
+
+                return false;
+            }
+
+            // ✅ Nombre válido: limpiar borde y guardar
+            inputEl.style.border = "";
+            inputEl.style.boxShadow = "";
+
+            localStorage.setItem(clave, nuevo);
+            actualizarSaludo();
+            showToast(`Nombre guardado como "${nuevo}"`, "success", "custom-success");
+        }
+
+
+    }).then((result) => {
+        // Esto ocurre SIEMPRE al cerrar el modal (confirmar o cancelar)
+        const modal = document.querySelector('.swal2-popup');
+        if (modal) {
+            modal.classList.remove("shake-error"); // quitar cualquier clase pendiente
+            modal.style.animation = ''; // también quitar animación en línea por si existe
+        }
+    });
+}
+
+
 
 // ============================== //
 // 🎨 Renderizado de interfaz
@@ -506,6 +658,8 @@ function mostrarArchivoEnModal(url, extension) {
 
 // Muestra un popup para crear una nueva carpeta y la envía como formulario
 function crearCarpeta() {
+    let resultadoSwal = null;
+
     Swal.fire({
         title: "Crear nueva carpeta",
         input: "text",
@@ -514,54 +668,96 @@ function crearCarpeta() {
         showCancelButton: true,
         confirmButtonText: "Crear",
         cancelButtonText: "Cancelar",
+        didOpen: () => {
+            const input = Swal.getInput();
+            if (input) {
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        Swal.clickConfirm();
+                    }
+                });
+            }
+        },
         inputValidator: (value) => {
             const nombre = value.trim();
-            if (!nombre) return "Debes ingresar un nombre";
+            const input = Swal.getInput();
+
+            if (!nombre) {
+                if (input) {
+                    input.style.border = "1px solid #dc3545";
+                    input.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,.25)";
+                }
+                const modal = Swal.getPopup();
+                if (modal) {
+                    modal.classList.remove("shake-error");
+                    void modal.offsetWidth;
+                    modal.classList.add("shake-error");
+                }
+                return "Debes ingresar un nombre";
+            }
+
             if (!/^[a-zA-Z0-9_-]+$/.test(nombre))
                 return "Solo letras, números, guiones o guiones bajos";
+
             if (window.carpetasDisponibles.includes(nombre))
                 return `❌ Ya existe una carpeta llamada "${nombre}"`;
-        },
-    }).then((result) => {
-        if (!result.isConfirmed) return;
+        }
+    })
+        .then((result) => {
+            resultadoSwal = result;
+            if (!result.isConfirmed) return;
 
-        const nombreCarpeta = result.value.trim();
-        fetch(window.location.pathname, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                action: "create",
-                folderName: nombreCarpeta,
-            }),
-        }).then(() => {
-            fetch("ver-archivos.php")
-                .then((res) => res.json())
-                .then((items) => {
-                    const carpetasFiltradas = items
-                        .filter(item => item.endsWith("/"))
-                        .map(c => c.slice(0, -1))
-                        .filter(nombre =>
-                            !carpetasOcultasSistema.includes(nombre) &&
-                            !nombre.startsWith('.') // <-- esto oculta cualquier carpeta tipo .git, .vscode, etc.
-                        );
+            const nombreCarpeta = result.value.trim();
 
-                    window.carpetasDisponibles = carpetasFiltradas;
-                    renderCarpetas(nombreCarpeta);
+            return fetch(window.location.pathname, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                    action: "create",
+                    folderName: nombreCarpeta,
+                }),
+            }).then(() => {
+                return fetch("ver-archivos.php")
+                    .then((res) => res.json())
+                    .then((items) => {
+                        const carpetasFiltradas = items
+                            .filter(item => item.endsWith("/"))
+                            .map(c => c.slice(0, -1))
+                            .filter(nombre =>
+                                !carpetasOcultasSistema.includes(nombre) &&
+                                !nombre.startsWith('.')
+                            );
 
-                    const tarjeta = document.querySelector(`[data-folder="${nombreCarpeta}"]`);
-                    if (tarjeta) {
-                        tarjeta.classList.add("carpeta-nueva");
-                        setTimeout(() => tarjeta.classList.remove("carpeta-nueva"), 4000);
-                    }
+                        window.carpetasDisponibles = carpetasFiltradas;
+                        renderCarpetas(nombreCarpeta);
 
-                    showToast(`Carpeta "${nombreCarpeta}" creada`, "success", "custom-success");
-                });
+                        const tarjeta = document.querySelector(`[data-folder="${nombreCarpeta}"]`);
+                        if (tarjeta) {
+                            tarjeta.classList.add("carpeta-nueva");
+                            setTimeout(() => tarjeta.classList.remove("carpeta-nueva"), 4000);
+                        }
+
+                        showToast(`Carpeta "${nombreCarpeta}" creada`, "success", "custom-success");
+                    });
+            });
+        })
+        .finally(() => {
+            if (!resultadoSwal?.isConfirmed) {
+                const modal = Swal.getPopup();
+                if (modal) {
+                    modal.classList.remove("shake-error");
+                    modal.style.animation = '';
+                }
+            }
         });
-    });
 }
+
 
 // Muestra un prompt para renombrar una carpeta y envía el formulario al servidor
 function renameFolder(folder) {
+    let resultadoSwal = null;
+
     Swal.fire({
         title: "Renombrar carpeta",
         input: "text",
@@ -570,54 +766,100 @@ function renameFolder(folder) {
         showCancelButton: true,
         confirmButtonText: "Renombrar",
         cancelButtonText: "Cancelar",
+        didOpen: () => {
+            const input = Swal.getInput();
+            if (input) {
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        Swal.clickConfirm();
+                    }
+                });
+            }
+        },
         inputValidator: (value) => {
             const nombre = value.trim();
-            if (!nombre) return "Debes ingresar un nuevo nombre";
-            if (!/^[a-zA-Z0-9_-]+$/.test(nombre))
-                return "Solo letras, números, guiones o guiones bajos";
-            if (nombre === folder) return "El nombre es el mismo";
-        },
-    }).then((result) => {
-        if (!result.isConfirmed) return;
+            const input = Swal.getInput();
 
-        const nuevoNombre = result.value.trim();
+            if (!nombre) {
+                if (input) {
+                    input.style.border = "1px solid #dc3545";
+                    // input.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,.25)";
+                }
+                const modal = Swal.getPopup();
+                if (modal) {
+                    modal.classList.remove("shake-error");
+                    void modal.offsetWidth;
+                    modal.classList.add("shake-error");
+                }
+                return "Debes ingresar un nuevo nombre";
+            }
 
-        fetch(window.location.pathname, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                action: "rename",
-                oldName: folder,
-                newName: nuevoNombre,
-            }),
-        }).then(() => {
-            fetch("ver-archivos.php")
-                .then((res) => res.json())
-                .then((items) => {
-                    const carpetasFiltradas = items
-                        .filter(item => item.endsWith("/"))
-                        .map(c => c.slice(0, -1))
-                        .filter(nombre =>
-                            !carpetasOcultasSistema.includes(nombre) &&
-                            !nombre.startsWith('.') // <-- esto oculta cualquier carpeta tipo .git, .vscode, etc.
-                        );
-                    window.carpetasDisponibles = carpetasFiltradas;
-                    renderCarpetas(nuevoNombre);
+            if (!/^[a-zA-Z0-9_-]+$/.test(nombre)) return "Solo letras, números, guiones o guiones bajos";
 
-                    // ✅ Aplicar manualmente la animación de resaltado azul
-                    const tarjeta = document.querySelector(`[data-folder="${nuevoNombre}"]`);
-                    if (tarjeta) {
-                        tarjeta.classList.add("carpeta-renombrada");
-                        setTimeout(() => {
-                            tarjeta.classList.remove("carpeta-renombrada");
-                        }, 4000);
-                    }
+            if (nombre === folder) {
+                const modal = Swal.getPopup();
+                if (modal) {
+                    modal.classList.remove("shake-error");
+                    void modal.offsetWidth;
+                    modal.classList.add("shake-error");
+                }
+                return "El nombre es el mismo";
+            }
+        }
+    })
+        .then((result) => {
+            resultadoSwal = result;
 
-                    showToast(`Carpeta renombrada a "${nuevoNombre}"`, "info", "custom-info");
-                });
+            if (!result.isConfirmed) return;
+
+            const nuevoNombre = result.value.trim();
+
+            return fetch(window.location.pathname, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                    action: "rename",
+                    oldName: folder,
+                    newName: nuevoNombre,
+                }),
+            }).then(() => {
+                return fetch("ver-archivos.php")
+                    .then((res) => res.json())
+                    .then((items) => {
+                        const carpetasFiltradas = items
+                            .filter(item => item.endsWith("/"))
+                            .map(c => c.slice(0, -1))
+                            .filter(nombre =>
+                                !carpetasOcultasSistema.includes(nombre) &&
+                                !nombre.startsWith('.')
+                            );
+                        window.carpetasDisponibles = carpetasFiltradas;
+                        renderCarpetas(nuevoNombre);
+
+                        const tarjeta = document.querySelector(`[data-folder="${nuevoNombre}"]`);
+                        if (tarjeta) {
+                            tarjeta.classList.add("carpeta-renombrada");
+                            setTimeout(() => tarjeta.classList.remove("carpeta-renombrada"), 4000);
+                        }
+
+                        showToast(`Carpeta renombrada a "${nuevoNombre}"`, "info", "custom-info");
+                    });
+            });
+        })
+        .finally(() => {
+            // ✅ Este bloque se ejecuta siempre, así haya cancelado
+            if (!resultadoSwal?.isConfirmed) {
+                const modal = Swal.getPopup();
+                if (modal) {
+                    modal.classList.remove("shake-error");
+                    modal.style.animation = '';
+                }
+            }
         });
-    });
 }
+
+
 
 // Muestra confirmación para eliminar una carpeta y envía el formulario
 function deleteFolder(folder) {
