@@ -101,7 +101,6 @@ function eliminarCarpeta($carpeta)
             <a class="btn btn-success" href="#" onclick="abrirRaizLocalhost()" title="Abrir carpeta raíz de localhost">
               <i class="fas fa-folder-open me-1"></i> Localhost
             </a>
-            <button onclick="cambiarNombreUsuario()" class="btn btn-outline-secondary btn-sm">Editar saludo</button>
             <button class="btn btn-secondary" onclick="mostrarOcultas()" title="Ver carpetas ocultas">
               👁️ Ver Ocultos
             </button>
@@ -160,8 +159,12 @@ function eliminarCarpeta($carpeta)
   <div class="position-fixed bottom-0 start-0 m-3 bg-dark text-white px-3 py-2 rounded shadow" id="time"></div>
   <div class="container contenedor-central">
     <hr class="divider">
-    <footer class="text-center mt-3 py-3 small">
-      Creado con ❤️ por <a href="https://instagram.com/adrianrodu" class="text-decoration-none fw-bold" target="_blank">Adrián</a>
+    <footer class="text-center mt-3 pt-3 small">
+      Creado con ❤️ por <a href="https://instagram.com/adrianrodu" class="text-decoration-none fw-bold" target="_blank" data-bs-toggle="tooltip"
+        data-bs-placement="top" title="Autor">Adrián</a> <span onclick="cambiarNombreUsuario()" class="" style="cursor: pointer;" data-bs-toggle="tooltip"
+        data-bs-placement="bottom" title="Cambiar nombre">
+        <i class="fa-solid fa-gear"></i>
+      </span>
     </footer>
   </div>
   <div class="offcanvas offcanvas-start custom-offcanvas" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralLabel">

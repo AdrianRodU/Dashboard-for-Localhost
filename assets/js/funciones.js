@@ -6,6 +6,7 @@
 const basePath = location.pathname.split("/")[1] || "root";
 const claveFavoritos = `favorites-${basePath}`;
 const claveOcultos = `ocultas-${basePath}`;
+const claveModoOscuro = `modoOscuro-${basePath}`;
 
 // ============================== //
 // 🚀 Eventos de inicio
@@ -72,11 +73,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <strong class='flex-grow-1'>${folder}</strong>
           </div>
           <div class='d-flex justify-content-between'>
-            <i class='fas fa-pencil-alt ' onclick='event.stopPropagation(); renameFolder("${folder}")'></i>
-            <i class='fas fa-trash ' onclick='deleteFolder("${folder}")'></i>
-            <i class='fas fa-star ' onclick='toggleFavorite("${folder}", this)'></i>
-            <i class='fas fa-eye-slash ' onclick='hideFolder("${folder}")'></i>
-            <i class='fas fa-search' title='Vista previa' onclick='event.stopPropagation(); verContenidoCarpeta("${folder}")'></i>
+            <i class='fas fa-pencil-alt ' data-bs-toggle='tooltip' data-bs-placement='bottom' onclick='event.stopPropagation(); renameFolder("${folder}")'></i>
+            <i class='fas fa-trash ' data-bs-toggle='tooltip' data-bs-placement='bottom' onclick='deleteFolder("${folder}")'></i>
+            <i class='fas fa-star ' data-bs-toggle='tooltip' data-bs-placement='bottom' onclick='toggleFavorite("${folder}", this)'></i>
+            <i class='fas fa-eye-slash ' data-bs-toggle='tooltip' data-bs-placement='bottom' onclick='hideFolder("${folder}")'></i>
+            <i class='fas fa-search' data-bs-toggle='tooltip' data-bs-placement='bottom' title='Vista previa' onclick='event.stopPropagation(); verContenidoCarpeta("${folder}")'></i>
           </div>
         </div>
       `;
@@ -91,19 +92,39 @@ document.addEventListener("DOMContentLoaded", () => {
             if (contenedor) contenedor.style.display = "none";
         }
     });
+
     updateFavorites();
     renderCarpetas();
-    const dark = localStorage.getItem("modoOscuro") === "true";
-    if (dark) {
-        document.body.classList.add("dark");
-        // document.querySelector('.btn-outline-dark').textContent = '☀️';
-    }
+
+    const isDark = localStorage.getItem(claveModoOscuro) === "true";
+    if (isDark) document.body.classList.add("dark");
+    actualizarTextoModo(); // Esto actualizará textos e íconos
+
     setInterval(() => {
         document.getElementById("time").textContent = new Date().toLocaleString();
     }, 1000);
 
+    activarTooltips(); // activa todos los tooltips del DOM inicial
 
 });
+
+function activarTooltips(contenedor = document) {
+    const tooltipElements = contenedor.querySelectorAll('[data-bs-toggle="tooltip"]');
+
+    tooltipElements.forEach(el => {
+        // Si ya existe, destruye para reiniciar correctamente
+        const oldTooltip = bootstrap.Tooltip.getInstance(el);
+        if (oldTooltip) oldTooltip.dispose();
+
+        // Crea uno nuevo con el contenido actualizado
+        const tooltip = new bootstrap.Tooltip(el);
+
+        // Oculta el tooltip al hacer clic para evitar que se congele
+        el.addEventListener("click", () => tooltip.hide());
+    });
+}
+
+
 
 // ============================== //
 // 🧰 Utilidades generales
@@ -216,12 +237,12 @@ function cambiarNombreUsuario() {
     const actual = localStorage.getItem(clave) || "";
 
     Swal.fire({
-        title: 'Configurar saludo',
+        title: 'Configurar nombre a mostrar',
         html: `
         <input id="nuevoNombreInput" class="swal2-input" placeholder="Tu nombre" value="${actual}">
         ${actual ? `
           <button id="borrarNombreBtn" class="swal2-styled swal2-cancel mt-2" style="background:#e74c3c;">
-            Borrar nombre
+            <i class="fa-solid fa-trash-can"></i> Borrar nombre
           </button>
         ` : ""}
       `,
@@ -229,31 +250,63 @@ function cambiarNombreUsuario() {
         showConfirmButton: true,
         confirmButtonText: 'Guardar',
         cancelButtonText: 'Cancelar',
+        allowOutsideClick: () => !Swal.isLoading(),
+        allowEscapeKey: () => !Swal.isLoading(),
+
         didOpen: () => {
+
             const btnBorrar = document.getElementById("borrarNombreBtn");
 
             if (btnBorrar) {
                 btnBorrar.addEventListener("click", () => {
-                    localStorage.removeItem(clave);
-                    Swal.close();
-                    showToast("Se eliminó el nombre personalizado", "error", "custom-error");
+                    Swal.fire({
+                        title: "¿Estás seguro?",
+                        text: "Se eliminará el nombre personalizado guardado.",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Sí, borrar",
+                        cancelButtonText: "Cancelar",
+                        customClass: {
+                            confirmButton: 'btn btn-danger',   // rojo de Bootstrap
+                            cancelButton: 'btn btn-secondary'
+                        },
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            localStorage.removeItem(clave);
+                            Swal.close();
 
-                    const saludoEl = document.getElementById("saludoInicial");
-                    if (saludoEl) {
-                        saludoEl.textContent = "¡Bienvenido! 👋";
-                        // saludoEl.classList.add("animacion-saludo");
-                        setTimeout(() => saludoEl.classList.remove("animacion-saludo"), 600);
-                    }
+                            showToast("Se eliminó el nombre personalizado", "error", "custom-error");
 
-                    setTimeout(() => {
-                        actualizarSaludo();
-                    }, 2000);
+                            const saludoEl = document.getElementById("saludoInicial");
+                            if (saludoEl) {
+                                saludoEl.textContent = "¡Bienvenido! 👋";
+                                saludoEl.classList.add("animacion-saludo");
+                                setTimeout(() => saludoEl.classList.remove("animacion-saludo"), 600);
+                            }
+
+                            setTimeout(() => {
+                                actualizarSaludo();
+                            }, 4000);
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            showToast("No se borró el nombre", "info", "custom-info");
+                        }
+                    });
                 });
             }
 
             // ✅ Habilitar Enter
             const input = document.getElementById("nuevoNombreInput");
             if (input) {
+                // ✅ Enfocar manualmente
+                input.focus();
+
+                // ✅ Mover el cursor al final
+                const valor = input.value;
+                input.value = "";
+                input.value = valor;
+
+                // Soporte para Enter
                 input.addEventListener("keydown", (e) => {
                     if (e.key === "Enter") {
                         e.preventDefault();
@@ -266,48 +319,44 @@ function cambiarNombreUsuario() {
         preConfirm: () => {
             const inputEl = document.getElementById("nuevoNombreInput");
             const nuevo = inputEl.value.trim();
+            const actual = localStorage.getItem(`nombreUsuario-${location.pathname}`) || "";
 
+            const modal = Swal.getPopup();
+
+            // Si el campo está vacío
             if (!nuevo) {
                 Swal.showValidationMessage("Por favor, escribe tu nombre o usa 'Borrar nombre'");
-
                 inputEl.style.border = "1px solid #dc3545";
-
-                const modal = document.querySelector('.swal2-popup');
+                inputEl.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,.25)";
                 if (modal) {
                     modal.classList.remove("shake-error");
                     void modal.offsetWidth;
                     modal.classList.add("shake-error");
                 }
-
                 return false;
             }
 
-            // 🔁 Nueva validación: nombre igual al actual
-            const actual = localStorage.getItem(`nombreUsuario-${location.pathname}`) || "";
+            // Si el nuevo nombre es igual al actual
             if (nuevo === actual) {
                 Swal.showValidationMessage("El nombre ingresado es el mismo que el actual");
-
                 inputEl.style.border = "1px solid #dc3545";
-
-                const modal = document.querySelector('.swal2-popup');
+                inputEl.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,.25)";
                 if (modal) {
                     modal.classList.remove("shake-error");
                     void modal.offsetWidth;
                     modal.classList.add("shake-error");
                 }
-
                 return false;
             }
 
-            // ✅ Nombre válido: limpiar borde y guardar
+            // Si es válido
             inputEl.style.border = "";
             inputEl.style.boxShadow = "";
 
-            localStorage.setItem(clave, nuevo);
+            localStorage.setItem(`nombreUsuario-${location.pathname}`, nuevo);
             actualizarSaludo();
             showToast(`Nombre guardado como "${nuevo}"`, "success", "custom-success");
         }
-
 
     }).then((result) => {
         // Esto ocurre SIEMPRE al cerrar el modal (confirmar o cancelar)
@@ -334,64 +383,104 @@ function abrirCarpeta(event, folder) {
 }
 
 // Renderiza todas las carpetas visibles (no ocultas ni favoritas) en el grid principal
-//function renderCarpetas() {
-function renderCarpetas(folderAnimada = null) {
+// Refactor de renderCarpetas() sin innerHTML
+//function renderCarpetas(folderAnimada = null) {
+function renderCarpetas(foldersAnimadas = []) {
+
+    if (!Array.isArray(foldersAnimadas)) {
+        foldersAnimadas = foldersAnimadas ? [foldersAnimadas] : [];
+    }
+
     const folderGrid = document.getElementById("folderGrid");
     folderGrid.innerHTML = "";
     const ocultas = JSON.parse(localStorage.getItem(claveOcultos) || "[]");
     const favoritas = JSON.parse(localStorage.getItem(claveFavoritos) || "[]");
-    // console.log("Favoritas:", favoritas, "Animada:", folderAnimada);
+
     window.carpetasDisponibles.forEach((folder) => {
         if (!ocultas.includes(folder) && !favoritas.includes(folder)) {
             const item = document.createElement("div");
-            const animClass = folder === folderAnimada ? "carpeta-nueva" : "";
+            // const animClass = folder === folderAnimada ? "carpeta-nueva" : "";
+            const animClass = foldersAnimadas.includes(folder) ? "carpeta-nueva" : "";
+
             item.className = "col-md-3 col-sm-6";
-            item.innerHTML = `
-            <div class='card shadow-sm p-3 cursor-pointer ${animClass}' data-folder="${folder}" onclick="abrirCarpeta(event, '${folder}')">
-              <div class='d-flex align-items-center mb-2'>
-                <i class='fas fa-folder text-warning me-2 fs-4'></i>
-                <strong class='flex-grow-1'>${folder}</strong>
-              </div>
-              <div class='d-flex justify-content-between'>
-                <i class='fas fa-pencil-alt ' title='Cambiar nombre' onclick='event.stopPropagation(); renameFolder("${folder}")'></i>
-                <i class='fas fa-trash ' title='Eliminar carpeta' onclick='event.stopPropagation(); deleteFolder("${folder}")'></i>
-                <i class='fas fa-star ' title='Agregar a favoritos' onclick='event.stopPropagation(); toggleFavorite("${folder}", this)'></i>
-                <i class='fas fa-folder-open d-none d-md-inline' title='Abrir carpeta en Windows' onclick='event.stopPropagation(); abrirEnWindows("${folder}")'></i>
-                <i class='fas fa-eye-slash ' title='Ocultar carpeta' onclick='event.stopPropagation(); hideFolder("${folder}")'></i>
-                <!-- <i class='fas fa-search text-info' title='Vista previa' onclick='event.stopPropagation(); vistaPrevia("${folder}")'></i> -->
-                <i class='fas fa-search' title='Vista previa' onclick='event.stopPropagation(); verContenidoCarpeta("${folder}")'></i>
-              </div>
-            </div>
-          `;
-            /*item.onclick = () => location.href = folder;*/
+
+            const card = document.createElement("div");
+            card.className = `card shadow-sm p-3 cursor-pointer ${animClass}`;
+            card.dataset.folder = folder;
+            card.onclick = (e) => abrirCarpeta(e, folder);
+
+            const header = document.createElement("div");
+            header.className = "d-flex align-items-center mb-2";
+
+            const iconFolder = document.createElement("i");
+            iconFolder.className = "fas fa-folder text-warning me-2 fs-4";
+
+            const name = document.createElement("strong");
+            name.className = "flex-grow-1";
+            name.textContent = folder;
+
+            header.appendChild(iconFolder);
+            header.appendChild(name);
+
+            const controls = document.createElement("div");
+            controls.className = "d-flex justify-content-between";
+
+            const icons = [
+                { icon: "fa-pencil-alt", title: "Cambiar nombre", action: () => renameFolder(folder) },
+                { icon: "fa-trash", title: "Eliminar carpeta", action: () => deleteFolder(folder) },
+                { icon: "fa-star", title: "Agregar a favoritos", action: (e) => toggleFavorite(folder, e.target) },
+                { icon: "fa-folder-open d-none d-md-inline", title: "Abrir carpeta en Windows", action: () => abrirEnWindows(folder) },
+                { icon: "fa-eye-slash", title: "Ocultar carpeta", action: () => hideFolder(folder) },
+                { icon: "fa-search", title: "Vista previa", action: () => verContenidoCarpeta(folder) },
+            ];
+
+            icons.forEach(({ icon, title, action }) => {
+                const i = document.createElement("i");
+                i.className = `fas ${icon}`;
+                i.dataset.bsToggle = "tooltip";
+                i.dataset.bsPlacement = "bottom";
+                i.title = title;
+                i.onclick = (e) => {
+                    e.stopPropagation();
+                    const tip = bootstrap.Tooltip.getInstance(i);
+                    if (tip) tip.hide();
+                    action(e);
+                };
+                controls.appendChild(i);
+            });
+
+            card.appendChild(header);
+            card.appendChild(controls);
+            item.appendChild(card);
             folderGrid.appendChild(item);
-            if (folder === folderAnimada) {
+
+            // animación visual si es nueva
+            if (foldersAnimadas.includes(folder)) {
                 requestAnimationFrame(() => {
-                    const el = item.firstElementChild;
-                    if (el) {
-                        el.classList.add("carpeta-nueva");
-                        setTimeout(() => el.classList.remove("carpeta-nueva"), 4000);
-                    }
+                    card.classList.add("carpeta-nueva");
+                    setTimeout(() => card.classList.remove("carpeta-nueva"), 4000);
                 });
             }
+
+            activarTooltips(card);
         }
     });
-    // Actualiza el contador de carpetas locales visibles
+
     const totalVisibles = window.carpetasDisponibles.filter((folder) => {
-        const ocultas = JSON.parse(localStorage.getItem(claveOcultos) || "[]");
-        const favoritas = JSON.parse(localStorage.getItem(claveFavoritos) || "[]");
         return !ocultas.includes(folder) && !favoritas.includes(folder);
     }).length;
+
     const localCountSpan = document.getElementById("localCount");
     if (localCountSpan) {
         localCountSpan.textContent = totalVisibles;
     }
-    // Mostrar mensaje si no hay carpetas locales
+
     const mensajeSinLocales = document.getElementById("mensajeSinLocales");
     if (mensajeSinLocales) {
         mensajeSinLocales.classList.toggle("d-none", totalVisibles > 0);
     }
 }
+
 
 // Dibuja las carpetas favoritas en el grid superior
 function updateFavorites(folderAnimado = null) {
@@ -402,32 +491,64 @@ function updateFavorites(folderAnimado = null) {
     favList.innerHTML = "";
     countSpan.textContent = favs.length;
     renderCarpetas(folderAnimado);
-    // Oculta o muestra el botón
-    if (btnQuitar) {
-        btnQuitar.style.display = favs.length > 0 ? "inline-block" : "none";
-    }
+    if (btnQuitar) btnQuitar.style.display = favs.length > 0 ? "inline-block" : "none";
+
     favs.forEach((folder) => {
         const item = document.createElement("div");
         item.className = "col-md-3 col-sm-6";
-        item.innerHTML = `
-      <div class='card shadow-sm p-3 cursor-pointer' data-folder="${folder}" onclick="abrirCarpeta(event, '${folder}')">
-        <div class='d-flex align-items-center mb-2'>
-          <i class='fas fa-folder text-warning me-2 fs-4'></i>
-          <strong class='flex-grow-1'>${folder}</strong>
-        </div>
-        <div class='d-flex justify-content-between'>
-          <i class='fas fa-folder-open d-none d-md-inline' title='Abrir carpeta en Windows' onclick='event.stopPropagation(); abrirEnWindows("${folder}")'></i>
-          <i class='fas fa-search' title='Vista previa' onclick='event.stopPropagation(); verContenidoCarpeta("${folder}")'></i>
-         <i class='fas fa-times text-danger' title='Quitar de favoritos' onclick='removeFavorite(event, "${folder}")'></i>
-        </div>
-      </div>
-    `;
+
+        const card = document.createElement("div");
+        card.className = "card shadow-sm p-3 cursor-pointer";
+        card.dataset.folder = folder;
+        card.onclick = (e) => abrirCarpeta(e, folder);
+
+        const header = document.createElement("div");
+        header.className = "d-flex align-items-center mb-2";
+
+        const iconFolder = document.createElement("i");
+        iconFolder.className = "fas fa-folder text-warning me-2 fs-4";
+
+        const name = document.createElement("strong");
+        name.className = "flex-grow-1";
+        name.textContent = folder;
+
+        header.appendChild(iconFolder);
+        header.appendChild(name);
+
+        const controls = document.createElement("div");
+        controls.className = "d-flex justify-content-between";
+
+        const icons = [
+            { icon: "fa-folder-open d-none d-md-inline", title: "Abrir carpeta en Windows", action: () => abrirEnWindows(folder) },
+            { icon: "fa-search", title: "Vista previa", action: () => verContenidoCarpeta(folder) },
+            { icon: "fa-times text-danger", title: "Quitar de favoritos", action: (e) => removeFavorite(e, folder) },
+        ];
+
+        icons.forEach(({ icon, title, action }) => {
+            const i = document.createElement("i");
+            i.className = `fas ${icon}`;
+            i.dataset.bsToggle = "tooltip";
+            i.dataset.bsPlacement = "bottom";
+            i.title = title;
+            i.onclick = (e) => {
+                e.stopPropagation();
+                const tip = bootstrap.Tooltip.getInstance(i);
+                if (tip) tip.hide();
+                action(e);
+            };
+            controls.appendChild(i);
+        });
+
+        card.appendChild(header);
+        card.appendChild(controls);
+        item.appendChild(card);
         if (folder === folderAnimado) {
             requestAnimationFrame(() => item.classList.add("fade-in"));
         }
         favList.appendChild(item);
+        activarTooltips(item);
     });
-    // Mostrar mensaje si no hay favoritos
+
     const mensajeSinFavs = document.getElementById("mensajeSinFavoritos");
     if (mensajeSinFavs) {
         mensajeSinFavs.classList.toggle("d-none", favs.length > 0);
@@ -436,11 +557,13 @@ function updateFavorites(folderAnimado = null) {
 
 // Sincroniza los textos de los botones con el estado del modo oscuro
 function actualizarTextoModo() {
-    const isDark = localStorage.getItem("modoOscuro") === "true";
-    // Cambia el texto del botón dentro del dropdown y del offcanvas
+    const isDark = localStorage.getItem(claveModoOscuro) === "true";
+
+    // Cambia el texto de todos los botones con esa clase
     document.querySelectorAll(".modoOscuroTexto").forEach((el) => {
         el.textContent = isDark ? "☀️ Modo Claro" : "🌙 Modo Oscuro";
     });
+
     // Cambia el ícono del botón hamburguesa superior
     const icono = document.getElementById("modoDropdownBtn");
     if (icono) icono.textContent = isDark ? "☀️" : "🌙";
@@ -449,19 +572,12 @@ function actualizarTextoModo() {
 // Cambia entre modo claro y oscuro, actualiza íconos y textos
 function toggleDarkMode() {
     const isDark = document.body.classList.toggle("dark");
-    localStorage.setItem("modoOscuro", isDark);
-    // Actualiza texto del botón principal
-    const texto = document.getElementById("modoOscuroTexto");
-    const icono = document.getElementById("modoDropdownBtn");
-    if (texto) texto.textContent = isDark ? "☀️ Modo Claro" : "🌙 Modo Oscuro";
-    if (icono) {
-        const isDark = localStorage.getItem("modoOscuro") === "true";
-        icono.textContent = isDark ? "☀️" : "🌙";
-    }
-    // También actualiza el botón dentro del menú lateral
-    document.querySelectorAll(".modoOscuroTexto").forEach((el) => {
-        el.textContent = isDark ? "☀️ Modo Claro" : "🌙 Modo Oscuro";
-    });
+
+    // Guardar el nuevo estado con clave por carpeta
+    localStorage.setItem(claveModoOscuro, isDark);
+
+    // Actualizar todos los textos e íconos de modo
+    actualizarTextoModo();
 }
 
 // Cierra cualquier modal abierto y luego muestra el contenido de otra carpeta
@@ -506,106 +622,156 @@ function verContenidoCarpeta(ruta = "") {
             const modal = document.createElement("div");
             modal.className = "modal fade";
             modal.tabIndex = -1;
-            // Breadcrumb
-            const partes = ruta.split("/").filter(Boolean);
-            let breadcrumbHTML = `<nav aria-label="breadcrumb"><ol class="breadcrumb mb-3">`;
-            breadcrumbHTML += `<li class="breadcrumb-item"><a href="#" onclick="event.preventDefault(); cerrarYVer('')">📁 Localhost</a></li>`;
+
+            const dialog = document.createElement("div");
+            dialog.className = "modal-dialog modal-lg modal-dialog-scrollable";
+
+            const content = document.createElement("div");
+            content.className = "modal-content";
+
+            const header = document.createElement("div");
+            header.className = "modal-header";
+            const title = document.createElement("h5");
+            title.className = "modal-title";
+            title.textContent = `Vista previa de: ${ruta || "📁 Raíz"}`;
+            const closeBtn = document.createElement("button");
+            closeBtn.type = "button";
+            closeBtn.className = "btn-close";
+            closeBtn.setAttribute("data-bs-dismiss", "modal");
+            closeBtn.setAttribute("aria-label", "Cerrar");
+            header.appendChild(title);
+            header.appendChild(closeBtn);
+
+            const body = document.createElement("div");
+            body.className = "modal-body";
+
+            const breadcrumb = document.createElement("nav");
+            breadcrumb.setAttribute("aria-label", "breadcrumb");
+            const ol = document.createElement("ol");
+            ol.className = "breadcrumb mb-3";
+
+            const liRaiz = document.createElement("li");
+            liRaiz.className = "breadcrumb-item";
+            const linkRaiz = document.createElement("a");
+            linkRaiz.href = "#";
+            linkRaiz.onclick = (e) => {
+                e.preventDefault();
+                cerrarYVer("");
+            };
+            linkRaiz.textContent = "📁 Localhost";
+            liRaiz.appendChild(linkRaiz);
+            ol.appendChild(liRaiz);
+
             let rutaAcumulada = "";
+            const partes = ruta.split("/").filter(Boolean);
             partes.forEach((parte, i) => {
                 rutaAcumulada += (rutaAcumulada ? "/" : "") + parte;
-                const esUltima = i === partes.length - 1;
-                breadcrumbHTML += esUltima
-                    ? `<li class="breadcrumb-item active" aria-current="page">
-       <i class="fas fa-folder-open me-1"></i>${parte}
-     </li>`
-                    : `<li class="breadcrumb-item">
-       <a href="#" onclick="event.preventDefault(); cerrarYVer('${rutaAcumulada}')">
-         <i class="fas fa-folder me-1"></i>${parte}
-       </a>
-     </li>`;
-            });
-            breadcrumbHTML += `</ol></nav>`;
-            modal.innerHTML = `
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Vista previa de: ${ruta || "📁 Raíz"}</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body">
-              ${breadcrumbHTML}
-              <ul class="list-group" id="listaContenidoCarpeta"></ul>
-            </div>
-            <div class="modal-footer">
-              ${ruta
-                    ? `<button class="btn btn-outline-secondary" onclick="cerrarYVer('${partes
-                        .slice(0, -1)
-                        .join("/")}')">⬅️ Atrás</button>`
-                    : ""
+                const li = document.createElement("li");
+                li.className = "breadcrumb-item";
+                if (i === partes.length - 1) {
+                    li.classList.add("active");
+                    li.setAttribute("aria-current", "page");
+                    li.innerHTML = `<i class='fas fa-folder-open me-1'></i>${parte}`;
+                } else {
+                    const a = document.createElement("a");
+                    a.href = "#";
+                    a.innerHTML = `<i class='fas fa-folder me-1'></i>${parte}`;
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        cerrarYVer(rutaAcumulada);
+                    };
+                    li.appendChild(a);
                 }
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-          </div>
-        </div>
-      `;
-            document.body.appendChild(modal);
-            const lista = modal.querySelector("#listaContenidoCarpeta");
-            lista.innerHTML = "";
+                ol.appendChild(li);
+            });
+
+            breadcrumb.appendChild(ol);
+            body.appendChild(breadcrumb);
+
+            const lista = document.createElement("ul");
+            lista.className = "list-group";
+            lista.id = "listaContenidoCarpeta";
+            body.appendChild(lista);
+
             if (data.length === 0) {
-                lista.innerHTML =
-                    '<li class="list-group-item">📂 Esta carpeta está vacía</li>';
+                const li = document.createElement("li");
+                li.className = "list-group-item";
+                li.textContent = "📂 Esta carpeta está vacía";
+                lista.appendChild(li);
             } else {
-                const carpetas = data.filter((nombre) => nombre.endsWith("/"));
-                const archivos = data.filter((nombre) => !nombre.endsWith("/"));
-                const elementosOrdenados = [...carpetas, ...archivos];
-                elementosOrdenados.forEach((nombre) => {
+                const carpetas = data.filter((n) => n.endsWith("/"));
+                const archivos = data.filter((n) => !n.endsWith("/"));
+                [...carpetas, ...archivos].forEach((nombre) => {
                     const item = document.createElement("li");
-                    item.className =
-                        "list-group-item d-flex justify-content-between align-items-center";
+                    item.className = "list-group-item d-flex justify-content-between align-items-center";
                     const esCarpeta = nombre.endsWith("/");
+
                     if (esCarpeta) {
-                        item.innerHTML = `
-      <div><i class="fas fa-folder text-warning me-2"></i><strong>${nombre.replace(
-                            "/",
-                            ""
-                        )}</strong></div>
-    `;
+                        const div = document.createElement("div");
+                        div.innerHTML = `<i class='fas fa-folder text-warning me-2'></i><strong>${nombre.replace("/", "")}</strong>`;
                         const btn = document.createElement("button");
                         btn.className = "btn btn-sm btn-outline-primary";
                         btn.innerHTML = '<i class="fas fa-eye"></i> Ver carpeta';
                         btn.onclick = () => {
-                            const nuevaRuta =
-                                (ruta ? ruta + "/" : "") + nombre.replace("/", "");
+                            const nuevaRuta = (ruta ? ruta + "/" : "") + nombre.replace("/", "");
                             bootstrap.Modal.getInstance(modal).hide();
                             modal.remove();
                             verContenidoCarpeta(nuevaRuta);
                         };
+                        item.appendChild(div);
                         item.appendChild(btn);
                     } else {
                         const urlArchivo = (ruta ? ruta + "/" : "") + nombre;
                         const extension = nombre.split(".").pop().toLowerCase();
                         const icono = obtenerIconoPorExtension(extension);
+
                         if (extension === "pdf") {
-                            item.innerHTML = `
-    <div class="d-flex align-items-center justify-content-between w-100">
-      <div><i class="fas ${icono} me-2"></i>${nombre}</div>
-      <button class="btn btn-sm btn-outline-danger" onclick="mostrarArchivoEnModal('${urlArchivo}', '${extension}')">
-        <i class="fas fa-eye"></i> Ver PDF
-      </button>
-    </div>
-  `;
+                            const div = document.createElement("div");
+                            div.className = "d-flex align-items-center justify-content-between w-100";
+                            div.innerHTML = `
+                <div><i class="fas ${icono} me-2"></i>${nombre}</div>
+                <button class="btn btn-sm btn-outline-danger" onclick="mostrarArchivoEnModal('${urlArchivo}', '${extension}')">
+                  <i class="fas fa-eye"></i> Ver PDF
+                </button>`;
+                            item.appendChild(div);
                         } else {
-                            item.innerHTML = `
-    <a href="${urlArchivo}" target="_blank" class="text-decoration-none text-reset w-100 d-flex align-items-center justify-content-between">
-      <div><i class="fas ${icono} me-2"></i>${nombre}</div>
-      <i class="fas fa-up-right-from-square text-muted"></i>
-    </a>
-  `;
+                            const a = document.createElement("a");
+                            a.href = urlArchivo;
+                            a.target = "_blank";
+                            a.className = "text-decoration-none text-reset w-100 d-flex align-items-center justify-content-between";
+                            a.innerHTML = `
+                <div><i class="fas ${icono} me-2"></i>${nombre}</div>
+                <i class="fas fa-up-right-from-square text-muted"></i>`;
+                            item.appendChild(a);
                         }
                     }
+
                     lista.appendChild(item);
                 });
             }
+
+            const footer = document.createElement("div");
+            footer.className = "modal-footer";
+            if (ruta) {
+                const btnAtras = document.createElement("button");
+                btnAtras.className = "btn btn-outline-secondary";
+                btnAtras.textContent = "⬅️ Atrás";
+                btnAtras.onclick = () => cerrarYVer(partes.slice(0, -1).join("/"));
+                footer.appendChild(btnAtras);
+            }
+            const btnCerrar = document.createElement("button");
+            btnCerrar.className = "btn btn-secondary";
+            btnCerrar.textContent = "Cerrar";
+            btnCerrar.setAttribute("data-bs-dismiss", "modal");
+            footer.appendChild(btnCerrar);
+
+            content.appendChild(header);
+            content.appendChild(body);
+            content.appendChild(footer);
+            dialog.appendChild(content);
+            modal.appendChild(dialog);
+            document.body.appendChild(modal);
+
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
             modal.addEventListener("hidden.bs.modal", () => modal.remove());
@@ -617,38 +783,77 @@ function mostrarArchivoEnModal(url, extension) {
     const modal = document.createElement("div");
     modal.className = "modal fade";
     modal.tabIndex = -1;
-    let contenido = "";
+
+    const dialog = document.createElement("div");
+    dialog.className = "modal-dialog modal-lg modal-dialog-scrollable";
+
+    const content = document.createElement("div");
+    content.className = "modal-content";
+
+    const header = document.createElement("div");
+    header.className = "modal-header";
+
+    const title = document.createElement("h5");
+    title.className = "modal-title";
+    title.textContent = "Vista previa del archivo";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "btn-close";
+    closeBtn.setAttribute("data-bs-dismiss", "modal");
+    closeBtn.setAttribute("aria-label", "Cerrar");
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+
+    const body = document.createElement("div");
+    body.className = "modal-body text-center";
+
+    let contenido;
     if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
-        contenido = `<img src="${url}" class="img-fluid" alt="Vista previa">`;
+        const img = document.createElement("img");
+        img.src = url;
+        img.className = "img-fluid";
+        img.alt = "Vista previa";
+        contenido = img;
     } else if (extension === "pdf") {
-        contenido = `<iframe src="${url}" width="100%" height="500px" style="border:none;"></iframe>`;
-    } else if (extension === "txt") {
-        fetch(url).then((res) => res.text());
-        modal
-            .querySelector(".modal-body")
-            .appendChild(pre)
-            .then((texto) => {
-                const pre = document.createElement("pre");
-                pre.textContent = texto;
-            });
+        const iframe = document.createElement("iframe");
+        iframe.src = url;
+        iframe.width = "100%";
+        iframe.height = "500px";
+        iframe.style.border = "none";
+        contenido = iframe;
+    } else {
+        const mensaje = document.createElement("p");
+        mensaje.textContent = `No se puede previsualizar este tipo de archivo.`;
+        contenido = mensaje;
     }
-    modal.innerHTML = `
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Vista previa del archivo</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body text-center">${contenido}</div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-        </div>
-      </div>
-    </div>
-  `;
+
+    body.appendChild(contenido);
+
+    const footer = document.createElement("div");
+    footer.className = "modal-footer";
+
+    const cerrarBtn = document.createElement("button");
+    cerrarBtn.type = "button";
+    cerrarBtn.className = "btn btn-secondary";
+    cerrarBtn.setAttribute("data-bs-dismiss", "modal");
+    cerrarBtn.textContent = "Cerrar";
+
+    footer.appendChild(cerrarBtn);
+
+    content.appendChild(header);
+    content.appendChild(body);
+    content.appendChild(footer);
+
+    dialog.appendChild(content);
+    modal.appendChild(dialog);
+
     document.body.appendChild(modal);
+
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
+
     modal.addEventListener("hidden.bs.modal", () => modal.remove());
 }
 
@@ -784,7 +989,7 @@ function renameFolder(folder) {
             if (!nombre) {
                 if (input) {
                     input.style.border = "1px solid #dc3545";
-                    // input.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,.25)";
+                    input.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,.25)";
                 }
                 const modal = Swal.getPopup();
                 if (modal) {
@@ -881,13 +1086,59 @@ function deleteFolder(folder) {
             const confirmBtn = Swal.getConfirmButton();
             confirmBtn.disabled = true;
 
-            input.addEventListener("input", () => {
-                confirmBtn.disabled = input.value.trim().toLowerCase() !== "eliminar";
-            });
+            if (input) {
+                input.focus();
+
+                input.addEventListener("input", () => {
+                    confirmBtn.disabled = input.value.trim().toLowerCase() !== "eliminar";
+                });
+
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        const valor = input.value.trim().toLowerCase();
+
+                        if (valor === "eliminar") {
+                            Swal.clickConfirm(); // ✅ Ejecuta como si presionara el botón
+                        } else {
+                            // ❌ Shake manual y marca en rojo si no escribió bien
+                            input.style.border = "1px solid #dc3545";
+                            input.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,.25)";
+                            const modal = Swal.getPopup();
+                            if (modal) {
+                                modal.classList.remove("shake-error");
+                                void modal.offsetWidth;
+                                modal.classList.add("shake-error");
+                            }
+                        }
+                    }
+                });
+            }
         }
+
     }).then((result) => {
+        const modal = Swal.getPopup();
+        const container = document.querySelector('.swal2-container');
+
+        // ✅ Esto se ejecuta SIEMPRE al cerrar el modal (confirmado o no)
+        if (modal) {
+            modal.classList.remove("shake-error");
+            modal.style.animation = '';
+        }
+
+        // ✅ Asegura que se limpie el fondo oscuro del body
+        document.body.classList.remove('swal2-shown', 'swal2-height-auto');
+        document.body.style.overflow = '';
+
+        // ✅ Limpia también cualquier backdrop de SweetAlert
+        if (container) {
+            container.classList.remove('swal2-backdrop-show', 'swal2-shown');
+        }
+
+        // ✅ Si NO confirmó, salimos
         if (!result.isConfirmed) return;
 
+        // ✅ Si SÍ confirmó, procedemos a eliminar la carpeta
         fetch(window.location.pathname, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -904,7 +1155,7 @@ function deleteFolder(folder) {
                         .map(c => c.slice(0, -1))
                         .filter(nombre =>
                             !carpetasOcultasSistema.includes(nombre) &&
-                            !nombre.startsWith('.') // <-- esto oculta cualquier carpeta tipo .git, .vscode, etc.
+                            !nombre.startsWith('.')
                         );
 
                     window.carpetasDisponibles = carpetasFiltradas;
@@ -992,44 +1243,64 @@ function mostrarOcultas() {
     const modal = document.createElement("div");
     modal.className = "modal fade";
     modal.tabIndex = -1;
-    modal.innerHTML = `
-    <div class="modal-dialog modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Carpetas Ocultas</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          <ul id="hiddenFoldersList" class="list-group mb-3"></ul>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline-success" id="mostrarTodasBtn">Mostrar todas</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-        </div>
-      </div>
-    </div>
-  `;
-    document.body.appendChild(modal);
-    const list = modal.querySelector("#hiddenFoldersList");
-    const mostrarTodasBtn = modal.querySelector("#mostrarTodasBtn");
+
+    const dialog = document.createElement("div");
+    dialog.className = "modal-dialog modal-dialog-scrollable";
+
+    const content = document.createElement("div");
+    content.className = "modal-content";
+
+    const header = document.createElement("div");
+    header.className = "modal-header";
+    header.innerHTML = `
+    <h5 class="modal-title">Carpetas Ocultas</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>`;
+
+    const body = document.createElement("div");
+    body.className = "modal-body";
+
+    const list = document.createElement("ul");
+    list.id = "hiddenFoldersList";
+    list.className = "list-group mb-3";
+
+    const footer = document.createElement("div");
+    footer.className = "modal-footer";
+
+    const mostrarTodasBtn = document.createElement("button");
+    mostrarTodasBtn.id = "mostrarTodasBtn";
+    mostrarTodasBtn.className = "btn btn-outline-success";
+    mostrarTodasBtn.textContent = "Mostrar todas";
+
+    const cerrarBtn = document.createElement("button");
+    cerrarBtn.className = "btn btn-secondary";
+    cerrarBtn.textContent = "Cerrar";
+    cerrarBtn.setAttribute("data-bs-dismiss", "modal");
+
     ocultas.forEach((folder) => {
         const li = document.createElement("li");
-        li.className =
-            "list-group-item d-flex justify-content-between align-items-center";
-        li.innerHTML = `
-      <div class="d-flex align-items-center gap-2">
-        <i class="fas fa-folder text-warning"></i>
-        <span class="fw-bold">${folder}</span>
-      </div>
-    `;
-        // Botón mostrar
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+
+        const folderDiv = document.createElement("div");
+        folderDiv.className = "d-flex align-items-center gap-2";
+
+        const icon = document.createElement("i");
+        icon.className = "fas fa-folder text-warning";
+
+        const span = document.createElement("span");
+        span.className = "fw-bold";
+        span.textContent = folder;
+
+        folderDiv.appendChild(icon);
+        folderDiv.appendChild(span);
+
         const btnMostrar = document.createElement("button");
         btnMostrar.className = "btn btn-sm btn-outline-primary me-2";
         btnMostrar.innerHTML = '<i class="fas fa-eye"></i> Mostrar';
-        // Botón volver a ocultar
+
         const btnOcultar = document.createElement("button");
         btnOcultar.className = "btn btn-sm btn-outline-secondary d-none";
         btnOcultar.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar';
+
         btnMostrar.addEventListener("click", () => {
             let actuales = JSON.parse(localStorage.getItem(claveOcultos) || "[]");
             const nuevas = actuales.filter((f) => f !== folder);
@@ -1046,10 +1317,9 @@ function mostrarOcultas() {
             btnMostrar.classList.add("d-none");
             btnOcultar.classList.remove("d-none");
             const restantes = JSON.parse(localStorage.getItem(claveOcultos) || "[]");
-            if (restantes.length === 0) {
-                mostrarTodasBtn.style.display = "none";
-            }
+            if (restantes.length === 0) mostrarTodasBtn.style.display = "none";
         });
+
         btnOcultar.addEventListener("click", () => {
             let actuales = JSON.parse(localStorage.getItem(claveOcultos) || "[]");
             if (!actuales.includes(folder)) actuales.push(folder);
@@ -1057,19 +1327,18 @@ function mostrarOcultas() {
             document.cookie = "ocultas=" + JSON.stringify(actuales) + "; path=/";
             renderCarpetas();
             updateFavorites();
-            showToast(
-                `Carpeta "${folder}" fue ocultada nuevamente`,
-                "warning",
-                "custom-warning"
-            );
+            showToast(`Carpeta "${folder}" fue ocultada nuevamente`, "warning", "custom-warning");
             btnOcultar.classList.add("d-none");
             btnMostrar.classList.remove("d-none");
             mostrarTodasBtn.style.display = "inline-block";
         });
+
+        li.appendChild(folderDiv);
         li.appendChild(btnMostrar);
         li.appendChild(btnOcultar);
         list.appendChild(li);
     });
+
     mostrarTodasBtn.addEventListener("click", () => {
         localStorage.setItem(claveOcultos, JSON.stringify([]));
         document.cookie = "ocultas=[]; path=/";
@@ -1082,19 +1351,25 @@ function mostrarOcultas() {
                 setTimeout(() => tarjeta.classList.remove("carpeta-nueva"), 4000);
             }
         });
-        showToast(
-            "Todas las carpetas fueron restauradas",
-            "success",
-            "custom-success"
-        );
+        showToast("Todas las carpetas fueron restauradas", "success", "custom-success");
         bootstrap.Modal.getInstance(modal).hide();
     });
+
+    footer.appendChild(mostrarTodasBtn);
+    footer.appendChild(cerrarBtn);
+    body.appendChild(list);
+    content.appendChild(header);
+    content.appendChild(body);
+    content.appendChild(footer);
+    dialog.appendChild(content);
+    modal.appendChild(dialog);
+    document.body.appendChild(modal);
+
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
-    modal.addEventListener("hidden.bs.modal", () => {
-        modal.remove();
-    });
+    modal.addEventListener("hidden.bs.modal", () => modal.remove());
 }
+
 
 // Restaura todas las carpetas ocultas
 function mostrarTodasOcultas() {
@@ -1125,16 +1400,35 @@ function mostrarTodasOcultas() {
 
 // Elimina todos los favoritos guardados
 function quitarTodosFavoritos() {
+    const carpetasQuitadas = JSON.parse(localStorage.getItem(claveFavoritos) || "[]");
+
+    if (carpetasQuitadas.length === 0) {
+        showToast("No hay carpetas en favoritos.", "info", "custom-info");
+        return;
+    }
+
+    // Limpiar favoritos
     localStorage.setItem(claveFavoritos, JSON.stringify([]));
     document.cookie = "favorites=[]; path=/";
-    updateFavorites();
-    renderCarpetas();
-    showToast(
-        "Todos los favoritos han sido eliminados.",
-        "error",
-        "custom-error"
-    );
+
+    updateFavorites(); // limpia favoritos
+    renderCarpetas(carpetasQuitadas); // ⚠️ Aquí pasamos las que deben animarse
+
+    // Agregar también .fade-in a cada tarjeta
+    setTimeout(() => {
+        carpetasQuitadas.forEach((folder) => {
+            const tarjeta = document.querySelector(`[data-folder="${folder}"]`);
+            if (tarjeta) {
+                tarjeta.classList.add("fade-in", "carpeta-nueva");
+                setTimeout(() => tarjeta.classList.remove("fade-in", "carpeta-nueva"), 4000);
+            }
+        });
+    }, 300);
+
+    showToast("Todos los favoritos han sido eliminados.", "error", "custom-error");
 }
+
+
 
 // ============================== //
 // 💻 Integración con el sistema
