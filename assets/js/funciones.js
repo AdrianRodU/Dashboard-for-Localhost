@@ -3,7 +3,10 @@
 // ============================== //
 
 // Identifica en qué carpeta estás trabajando ("root" si estás en localhost directamente)
-const basePath = location.pathname.split("/")[1] || "root";
+const pathPart = location.pathname.split("/")[1];
+const basePath = pathPart || "root";
+const baseURL = pathPart ? "/" + pathPart : "";
+
 const claveFavoritos = `favorites-${basePath}`;
 const claveOcultos = `ocultas-${basePath}`;
 const claveModoOscuro = `modoOscuro-${basePath}`;
@@ -106,6 +109,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     activarTooltips(); // activa todos los tooltips del DOM inicial
 
+    // Limpieza automática de archivos temporales de eliminación
+    fetch(`${baseURL}/app/limpiar-progreso.php`)
+        .then(() => {
+            showToast("🧹 Archivos temporales limpiados", "info", "custom-info");
+        });
 });
 
 function activarTooltips(contenedor = document) {
@@ -121,8 +129,6 @@ function activarTooltips(contenedor = document) {
         });
     });
 }
-
-
 
 
 // ============================== //
@@ -294,13 +300,13 @@ function cambiarNombreUsuario() {
                 });
             }
 
-            // ✅ Habilitar Enter
+            // Habilitar Enter
             const input = document.getElementById("nuevoNombreInput");
             if (input) {
-                // ✅ Enfocar manualmente
+                // Enfocar manualmente
                 input.focus();
 
-                // ✅ Mover el cursor al final
+                // Mover el cursor al final
                 const valor = input.value;
                 input.value = "";
                 input.value = valor;
@@ -455,7 +461,7 @@ function renderCarpetas(foldersAnimadas = []) {
             dropdown.className = "dropdown ms-auto"; // <-- esto lo alinea a la derecha
 
             const toggleBtn = document.createElement("button");
-            toggleBtn.className = "btn btn-sm btn-outline-secondary dropdown-toggle";
+            toggleBtn.className = "btn btn-sm btn-primary dropdown-toggle";
             toggleBtn.setAttribute("data-bs-toggle", "dropdown");
             toggleBtn.setAttribute("aria-expanded", "false");
             toggleBtn.innerHTML = ` <i class="fas fa-ellipsis-v"></i> `;
@@ -610,6 +616,29 @@ function renderCarpetas(foldersAnimadas = []) {
     }
 }
 
+// Simula grid con Skeleton loading
+function mostrarSkeletons() {
+    const grid = document.getElementById("folderGrid");
+    grid.innerHTML = "";
+
+    const mensajeSinLocales = document.getElementById("mensajeSinLocales");
+    if (mensajeSinLocales) {
+        mensajeSinLocales.classList.add("d-none"); // ocultar el mensaje temporalmente
+    }
+
+    for (let i = 0; i < 4; i++) {
+        const col = document.createElement("div");
+        col.className = "col-md-3 col-sm-6";
+
+        const card = document.createElement("div");
+        card.className = "skeleton-card skeleton";
+
+        col.appendChild(card);
+        grid.appendChild(col);
+    }
+}
+
+
 // Dibuja las carpetas favoritas en el grid superior
 function updateFavorites(folderAnimado = null) {
     const countSpan = document.getElementById("favoritesCount");
@@ -649,8 +678,8 @@ function updateFavorites(folderAnimado = null) {
         const icons = [
             { icon: "fa-folder-open d-none d-md-inline", title: "Abrir carpeta en Windows", action: () => abrirEnWindows(folder) },
             { icon: "fa-search", title: "Vista previa", action: () => verContenidoCarpeta(folder) },
-            { icon: "fab fa-wordpress text-primary", title: "Instalar WordPress", action: () => instalarWordPress(folder) },
-            { icon: "fa-times text-danger", title: "Quitar de favoritos", action: (e) => removeFavorite(e, folder) },
+            { icon: "fab fa-wordpress", title: "Instalar WordPress", action: () => instalarWordPress(folder) },
+            { icon: "fa-folder-minus text-danger", title: "Quitar de favoritos", action: (e) => removeFavorite(e, folder) },
         ];
 
         icons.forEach(({ icon, title, action }) => {
@@ -745,7 +774,7 @@ function cerrarYVer(ruta) {
 
 // Solicita al servidor el contenido de una carpeta y muestra un modal con su vista previa
 function verContenidoCarpeta(ruta = "") {
-    fetch("ver-archivos.php?ruta=" + encodeURIComponent(ruta))
+    fetch(`${baseURL}/preview/ver-archivos.php?ruta=${encodeURIComponent(ruta)}&_=${Date.now()}`)
         .then((res) => res.json())
         .then((data) => {
             const modal = document.createElement("div");
@@ -1052,7 +1081,7 @@ function crearCarpeta() {
                     folderName: nombreCarpeta,
                 }),
             }).then(() => {
-                return fetch("ver-archivos.php")
+                return fetch(`${baseURL}/preview/ver-archivos.php?ruta=&_=${Date.now()}`)
                     .then((res) => res.json())
                     .then((items) => {
                         const carpetasFiltradas = items
@@ -1088,7 +1117,8 @@ function crearCarpeta() {
 }
 
 // Muestra un prompt para renombrar una carpeta y envía el formulario al servidor
-function renameFolder(folder) {
+//function renameFolder(folder) {
+function renameFolder(folder, onCancel = null) {
     let resultadoSwal = null;
 
     Swal.fire({
@@ -1157,7 +1187,7 @@ function renameFolder(folder) {
                     newName: nuevoNombre,
                 }),
             }).then(() => {
-                return fetch("ver-archivos.php")
+                return fetch(`${baseURL}/preview/ver-archivos.php?ruta=&_=${Date.now()}`)
                     .then((res) => res.json())
                     .then((items) => {
                         const carpetasFiltradas = items
@@ -1181,13 +1211,16 @@ function renameFolder(folder) {
             });
         })
         .finally(() => {
-            // ✅ Este bloque se ejecuta siempre, así haya cancelado
+            // Este bloque se ejecuta siempre, así haya cancelado
             if (!resultadoSwal?.isConfirmed) {
                 const modal = Swal.getPopup();
                 if (modal) {
                     modal.classList.remove("shake-error");
                     modal.style.animation = '';
                 }
+            }
+            if (!resultadoSwal?.isConfirmed && typeof onCancel === "function") {
+                onCancel();
             }
         });
 }
@@ -1214,7 +1247,6 @@ function deleteFolder(folder) {
 
             if (input) {
                 input.focus();
-
                 input.addEventListener("input", () => {
                     confirmBtn.disabled = input.value.trim().toLowerCase() !== "eliminar";
                 });
@@ -1222,14 +1254,11 @@ function deleteFolder(folder) {
                 input.addEventListener("keydown", (e) => {
                     if (e.key === "Enter") {
                         e.preventDefault();
-                        const valor = input.value.trim().toLowerCase();
-
-                        if (valor === "eliminar") {
-                            Swal.clickConfirm(); // ✅ Ejecuta como si presionara el botón
+                        if (input.value.trim().toLowerCase() === "eliminar") {
+                            Swal.clickConfirm();
                         } else {
-                            // ❌ Shake manual y marca en rojo si no escribió bien
                             input.style.border = "1px solid #dc3545";
-                            input.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,.25)";
+                            input.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,0.25)";
                             const modal = Swal.getPopup();
                             if (modal) {
                                 modal.classList.remove("shake-error");
@@ -1241,67 +1270,89 @@ function deleteFolder(folder) {
                 });
             }
         }
-
     }).then((result) => {
-        const modal = Swal.getPopup();
-        const container = document.querySelector('.swal2-container');
-
-        // ✅ Esto se ejecuta SIEMPRE al cerrar el modal (confirmado o no)
-        if (modal) {
-            modal.classList.remove("shake-error");
-            modal.style.animation = '';
-        }
-
-        // ✅ Asegura que se limpie el fondo oscuro del body
-        document.body.classList.remove('swal2-shown', 'swal2-height-auto');
-        document.body.style.overflow = '';
-
-        // ✅ Limpia también cualquier backdrop de SweetAlert
-        if (container) {
-            container.classList.remove('swal2-backdrop-show', 'swal2-shown');
-        }
-
-        // ✅ Si NO confirmó, salimos
         if (!result.isConfirmed) return;
 
+        // Mostrar barra de progreso
         Swal.fire({
             title: "Eliminando carpeta...",
-            text: `Esto puede tardar unos segundos si contiene muchos archivos. ⏳`,
+            html: `
+            <p class="mb-2 mb-3">Esto puede tardar unos segundos si contiene muchos archivos. ⏳</p>
+          <div class="progress" style="height: 25px;">
+            <div id="barraProgreso" class="progress-bar bg-danger" role="progressbar" style="width: 0%">0%</div>
+          </div>
+        `,
             allowOutsideClick: false,
+            showConfirmButton: false,
             didOpen: () => {
                 Swal.showLoading();
             }
         });
 
+        // Iniciar eliminación en backend
+        fetch(`${baseURL}/app/eliminar-carpeta-progresivo.php?carpeta=${encodeURIComponent(folder)}`);
 
-        // ✅ Si SÍ confirmó, procedemos a eliminar la carpeta
-        fetch(window.location.pathname, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                action: "delete",
-                folderName: folder,
-            }),
-        }).then(() => {
-            fetch("ver-archivos.php")
-                .then((res) => res.json())
-                .then((items) => {
-                    const carpetasFiltradas = items
-                        .filter(item => item.endsWith("/"))
-                        .map(c => c.slice(0, -1))
-                        .filter(nombre =>
-                            !carpetasOcultasSistema.includes(nombre) &&
-                            !nombre.startsWith('.')
-                        );
+        // Consultar progreso
+        const barra = () => document.getElementById("barraProgreso");
+        let intentosFallidos = 0;
+        const maxIntentos = 20;
 
-                    window.carpetasDisponibles = carpetasFiltradas;
-                    renderCarpetas();
+        const interval = setInterval(() => {
+            fetch(`${baseURL}/app/progreso-carpeta.php?carpeta=${encodeURIComponent(folder)}`)
+                .then(async (res) => {
+                    const text = await res.text();
+                    try {
+                        return JSON.parse(text);
+                    } catch (err) {
+                        intentosFallidos++;
+                        if (intentosFallidos >= maxIntentos) {
+                            clearInterval(interval);
+                            Swal.close();
+                            showToast("❌ Error al obtener progreso", "error", "custom-error");
+                        }
+                        return null;
+                    }
+                })
+                .then((data) => {
+                    if (!data) return;
 
-                    showToast(`Carpeta "${folder}" eliminada correctamente`, "success", "custom-success");
+                    const { total, actual } = data;
+                    const porcentaje = Math.round((actual / total) * 100);
+                    const barra = document.getElementById("barraProgreso");
+
+                    if (barra) {
+                        barra.style.width = porcentaje + "%";
+                        barra.textContent = porcentaje < 100 ? `${porcentaje}%` : "Eliminado";
+                        if (porcentaje >= 100) barra.classList.replace("bg-danger", "bg-success");
+                    }
+
+                    if (porcentaje >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            Swal.close();
+                            window.carpetasDisponibles = window.carpetasDisponibles.filter(f => f !== folder);
+                            renderCarpetas();
+                            mostrarSkeletons();
+                            setTimeout(() => {
+                                fetch(`${baseURL}/preview/ver-archivos.php?ruta=&_=${Date.now()}`)
+                                    .then(res => res.json())
+                                    .then((items) => {
+                                        const carpetasFiltradas = items
+                                            .filter(i => i.endsWith("/"))
+                                            .map(i => i.slice(0, -1))
+                                            .filter(nombre =>
+                                                !carpetasOcultasSistema.includes(nombre) &&
+                                                !nombre.startsWith('.')
+                                            );
+                                        window.carpetasDisponibles = carpetasFiltradas;
+                                        renderCarpetas();
+                                        showToast(`Carpeta "${folder}" eliminada correctamente`, "success", "custom-success");
+                                    });
+                            }, 1200);
+                        }, 800);
+                    }
                 });
-        }).catch((error) => {
-            Swal.fire("❌ Error", "No se pudo eliminar la carpeta.", "error");
-        });
+        }, 300);
 
     });
 }
@@ -1316,14 +1367,14 @@ function toggleFavorite(folder, btn) {
         document.cookie = `${claveFavoritos}=` + JSON.stringify(favs) + "; path=/";
         setTimeout(() => {
             updateFavorites(folder);
-        }, 10); // ✅ Pequeño delay para asegurar relectura
+        }, 10); // Pequeño delay para asegurar relectura
         showToast(
             `Carpeta "${folder}" fue quitada de favoritos.`,
             "warning",
             "custom-warning"
         );
     } else {
-        // ✅ Agregar a favoritos
+        // Agregar a favoritos
         favs.push(folder);
         localStorage.setItem(claveFavoritos, JSON.stringify(favs));
         document.cookie = `${claveFavoritos}=` + JSON.stringify(favs) + "; path=/";
@@ -1343,7 +1394,7 @@ function removeFavorite(event, folder) {
     let favs = JSON.parse(localStorage.getItem(claveFavoritos) || "[]");
     favs = favs.filter((f) => f !== folder);
     localStorage.setItem(claveFavoritos, JSON.stringify(favs));
-    // ⚠️ Agrega este pequeño delay para asegurar sincronización
+    // Agrega este pequeño delay para asegurar sincronización
     setTimeout(() => {
         updateFavorites(folder); // <- pasamos la carpeta correctamente
     }, 10);
@@ -1368,7 +1419,7 @@ function hideFolder(folder) {
         });
         renderCarpetas();
         showToast("Carpeta Ocultada", "warning", "custom-warning");
-        actualizarTextoModo(); // ✅ Usamos la nueva función
+        actualizarTextoModo(); // Usamos la nueva función
     }
 }
 
@@ -1573,7 +1624,7 @@ function quitarTodosFavoritos() {
 
 // Llama al backend para abrir una carpeta específica en el explorador de Windows
 function abrirEnWindows(folder) {
-    fetch(`abrir-carpeta.php?carpeta=${encodeURIComponent(folder)}`).then(() => {
+    fetch(`${baseURL}/app/abrir-carpeta.php?carpeta=${encodeURIComponent(folder)}`).then(() => {
         showToast(
             `Se abrió la carpeta "${folder}" en el explorador de Windows.`,
             "info",
@@ -1584,7 +1635,7 @@ function abrirEnWindows(folder) {
 
 // Abre la carpeta raíz de localhost sin importar dónde estés ubicado
 function abrirRaizLocalhost() {
-    fetch("abrir-carpeta.php?carpeta=root").then(() => {
+    fetch(`${baseURL}/app/abrir-carpeta.php?carpeta=root`).then(() => {
         showToast("Se abrió la carpeta raíz de localhost.", "info", "custom-info");
     });
 }
@@ -1598,106 +1649,298 @@ window.addEventListener("resize", () => {
 });
 
 // Permite instalar la última versión de WordPress directo a la carpeta
+
 function instalarWordPress(folder) {
-    Swal.fire({
-        title: `Instalar WordPress en "${folder}"`,
-        html: `
-          <div class="swal2-form-group text-start mb-3">
-            <label class="form-label d-block mb-1"><i class="fa-solid fa-globe"></i> Idioma / Región</label>
-            <select id="idiomaWp" class="form-select">
-              <option value="latest" selected>🌐 Español (Internacional)</option>
-              <option value="es_PE">🇵🇪 Español (Perú)</option>
-              <option value="es_ES">🇪🇸 Español (España)</option>
-              <option value="es_MX">🇲🇽 Español (México)</option>
-              <option value="en_US">🇺🇸 Inglés (EEUU)</option>
-            </select>
-          </div>
+    // 🔍 Verificar primero si ya hay una instalación
+    fetch(`${baseURL}/app/validar-wordpress.php?carpeta=${encodeURIComponent(folder)}`)
+        .then((res) => res.json())
+        .then((data) => {
+            if (!data.success) {
+                Swal.fire({
+                    icon: "error",
+                    title: "WordPress ya está instalado",
+                    html: data.message,
+                    showCancelButton: true,
+                    confirmButtonText: "Abrir carpeta en Explorer",
+                    cancelButtonText: "Cerrar",
+                    reverseButtons: true
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        abrirEnWindows(folder);
+                    }
+                });
+                return;
+            }
 
-          <div class="swal2-form-group mb-2 text-start">
-            <label class="form-label d-block mb-1"><i class="fa-solid fa-code-branch"></i> Versión</label>
-               <select id="versionesWp" class="form-select flex-fill" disabled>
-                <option value="">⏳ Cargando versiones...</option>
+            // Si no hay WordPress instalado, mostrar el modal normal
+            Swal.fire({
+                title: `Instalar WordPress en "${folder}"`,
+                html: `
+            <div class="swal2-form-group text-start mb-3">
+              <label class="form-label d-block mb-1"><i class="fa-solid fa-globe"></i> Idioma / Región</label>
+              <select id="idiomaWp" class="form-select">
+                <option value="latest" selected>🌐 Español (Internacional)</option>
+                <option value="es_PE">🇵🇪 Español (Perú)</option>
+                <option value="es_ES">🇪🇸 Español (España)</option>
+                <option value="es_MX">🇲🇽 Español (México)</option>
+                <option value="en_US">🇺🇸 Inglés (EEUU)</option>
               </select>
-          </div>
-        `,
-        showCancelButton: true,
-        confirmButtonText: "📥 Instalar",
-        cancelButtonText: "Cancelar",
-        didOpen: () => {
-            const selector = document.getElementById("versionesWp");
+            </div>
 
-            if (selector) {
-                fetch("obtener-versiones.php")
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log("🧪 Versiones obtenidas:", data);
-                        selector.innerHTML = "";
-                        selector.disabled = false;
+            <div class="swal2-form-group mb-2 text-start">
+              <label class="form-label d-block mb-1"><i class="fa-solid fa-code-branch"></i> Versión</label>
+                 <select id="versionesWp" class="form-select flex-fill" disabled>
+                  <option value="">⏳ Cargando versiones...</option>
+                </select>
+            </div>
+          `,
+                showCancelButton: true,
+                confirmButtonText: "📥 Instalar",
+                cancelButtonText: "Cancelar",
+                didOpen: () => {
+                    const selector = document.getElementById("versionesWp");
 
-                        selector.appendChild(new Option("latest (Recomendada)", "latest"));
+                    if (selector) {
+                        fetch(`${baseURL}/app/obtener-versiones.php`)
+                            .then(async (res) => {
+                                const text = await res.text();
+                                try {
+                                    return JSON.parse(text);
+                                } catch (err) {
+                                    console.error("❌ Respuesta inesperada del servidor:", text);
+                                    throw new Error("El servidor no devolvió un JSON válido");
+                                }
+                            })
 
-                        data.forEach(ver => {
-                            selector.appendChild(new Option(ver, ver));
-                        });
+                            .then(data => {
+                                selector.innerHTML = "";
+                                selector.disabled = false;
 
-                        selector.value = "latest";
+                                const ultima = data[0];
+                                selector.appendChild(new Option(`latest (Recomendada - ${ultima})`, "latest"));
+
+                                data.forEach(ver => {
+                                    if (ver !== ultima) {
+                                        selector.appendChild(new Option(ver, ver));
+                                    }
+                                });
+
+                                selector.value = "latest";
+                            })
+                            .catch(() => {
+                                selector.innerHTML = `<option value="latest">latest</option>`;
+                                selector.disabled = false;
+
+                                Swal.fire({
+                                    icon: "warning",
+                                    title: "No se pudo cargar la lista de versiones",
+                                    text: "Se usará la opción 'latest' por defecto.",
+                                    toast: true,
+                                    position: "top-end",
+                                    timer: 4000,
+                                    showConfirmButton: false
+                                });
+                            });
+                    }
+                },
+                preConfirm: () => {
+                    const idioma = document.getElementById("idiomaWp").value;
+                    const version = document.getElementById("versionesWp").value || "latest";
+                    return { idioma, version };
+                }
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                const { idioma, version } = result.value;
+                const selector = document.getElementById("versionesWp");
+                const textoSeleccionado = selector.options[selector.selectedIndex].text;
+
+                Swal.fire({
+                    title: `Descargando WordPress ${textoSeleccionado}`,
+                    text: `Por favor espera unos segundos ⏳`,
+                    html: `
+                                        <p class="mb-2">Esto puede tardar unos segundos ⏳</p>
+                                        <div class="progress" style="height: 25px;">
+                                          <div id="barraInstalacion" class="progress-bar bg-success " role="progressbar" style="width: 0%">0%</div>
+                                        </div>
+                                      `,
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                        let progreso = 0;
+                        const barra = document.getElementById("barraInstalacion");
+                        const avance = setInterval(() => {
+                            progreso += Math.floor(Math.random() * 8) + 3;
+                            if (progreso >= 100) progreso = 100;
+                            if (barra) {
+                                barra.style.width = progreso + "%";
+                                barra.textContent = progreso + "%";
+                            }
+                            if (progreso === 100) clearInterval(avance);
+                        }, 300);
+                    }
+                });
+
+                fetch(`${baseURL}/app/instalar-wordpress.php?carpeta=${encodeURIComponent(folder)}&idioma=${idioma}&version=${version}`)
+                    .then(async (res) => {
+                        const text = await res.text();
+                        try {
+                            return JSON.parse(text);
+                        } catch (err) {
+                            console.error("❌ Error al parsear JSON:", text);
+                            throw new Error("Respuesta inesperada del servidor");
+                        }
                     })
-                    .catch(() => {
-                        selector.innerHTML = `<option value="latest">latest</option>`;
-                        selector.disabled = false;
+                    .then((data) => {
+                        if (data.success) {
+                            Swal.fire("WordPress instalado correctamente", "", "success");
+                        } else {
+                            if (data.message.includes("No puedes instalar WordPress en una carpeta llamada")) {
+                                Swal.fire({
+                                    icon: "warning",
+                                    title: "⚠️ Carpeta no recomendada",
+                                    html: data.message,
+                                    showDenyButton: true,
+                                    showCancelButton: true,
+                                    confirmButtonText: "📥 Instalar de todas formas",
+                                    denyButtonText: "✏️ Cambiar nombre",
+                                    cancelButtonText: "Cancelar"
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        // Instalar forzadamente con barra
+                                        Swal.fire({
+                                            title: `Descargando WordPress...`,
+                                            html: `
+                                        <p class="mb-2">Esto puede tardar unos segundos ⏳</p>
+                                        <div class="progress" style="height: 25px;">
+                                          <div id="barraInstalacion" class="progress-bar bg-success " role="progressbar" style="width: 0%">0%</div>
+                                        </div>
+                                      `,
+                                            allowOutsideClick: false,
+                                            showConfirmButton: false,
+                                            didOpen: () => {
+                                                Swal.showLoading();
+                                                let progreso = 0;
+                                                const barra = document.getElementById("barraInstalacion");
+                                                const avance = setInterval(() => {
+                                                    progreso += Math.floor(Math.random() * 8) + 3;
+                                                    if (progreso >= 100) progreso = 100;
+                                                    if (barra) {
+                                                        barra.style.width = progreso + "%";
+                                                        barra.textContent = progreso + "%";
+                                                    }
+                                                    if (progreso === 100) clearInterval(avance);
+                                                }, 300);
+                                            }
+                                        });
 
-                        // 🛑 Mostrar error al usuario
-                        Swal.fire({
-                            icon: "warning",
-                            title: "No se pudo cargar la lista de versiones",
-                            text: "Se usará la opción 'latest' por defecto.",
-                            toast: true,
-                            position: "top-end",
-                            timer: 4000,
-                            showConfirmButton: false
-                        });
+                                        fetch(`${baseURL}/app/instalar-wordpress.php?carpeta=${encodeURIComponent(folder)}&idioma=${idioma}&version=${version}&forzar=1`)
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                if (data.success) {
+                                                    Swal.fire("WordPress instalado correctamente", "", "success");
+                                                    // abrirEnWindows(folder);
+                                                } else {
+                                                    Swal.fire("❌ Error", data.message, "error");
+                                                }
+                                            });
+
+                                    }
+                                    else if (result.isDenied) {
+                                        renameFolder(folder, () => {
+                                            // volver a mostrar la advertencia si canceló el rename
+                                            mostrarAdvertenciaWordpress(folder, idioma, version);
+                                        });
+                                    }
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error",
+                                    html: data.message,
+                                    showCancelButton: true,
+                                    confirmButtonText: "Abrir carpeta en Explorer",
+                                    cancelButtonText: "Cerrar",
+                                    reverseButtons: true
+                                }).then(result => {
+                                    if (result.isConfirmed) {
+                                        abrirEnWindows(folder);
+                                    }
+                                });
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        Swal.fire("Error inesperado", error.message, "error");
                     });
-            }
-        },
-        preConfirm: () => {
-            const idioma = document.getElementById("idiomaWp").value;
-            const version = document.getElementById("versionesWp").value || "latest";
-            return { idioma, version };
-        }
-    }).then((result) => {
-        if (!result.isConfirmed) return;
-
-        const { idioma, version } = result.value;
-
-        Swal.fire({
-            title: "Descargando WordPress...",
-            text: `Por favor espera unos segundos ⏳`,
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        fetch(`instalar-wordpress.php?carpeta=${encodeURIComponent(folder)}&idioma=${idioma}&version=${version}`)
-            .then(async (res) => {
-                try {
-                    const data = await res.json();
-                    return data;
-                } catch (err) {
-                    throw new Error("Respuesta no válida del servidor");
-                }
-            })
-            .then((data) => {
-                if (data.success) {
-                    Swal.fire("WordPress instalado correctamente", "", "success");
-                    // abrirEnWindows(folder);
-                } else {
-                    Swal.fire("Error", data.message || "Ocurrió un problema", "error");
-                }
-            })
-            .catch((error) => {
-                Swal.fire("Error inesperado", error.message, "error");
             });
-    });
+        });
+}
 
+// Mostrar Avertencia de WordPress de manera Forzada
+function mostrarAdvertenciaWordpress(folder, idioma, version) {
+    Swal.fire({
+        icon: "warning",
+        title: "⚠️ Carpeta no recomendada",
+        html: `
+        <p><b>Error:</b> No puedes instalar WordPress en una carpeta llamada
+        <span class="badge bg-danger">wordpress</span>.</p>
+        <p>Esto causaría una estructura duplicada como
+        <code>wordpress/wordpress/</code> y una instalación corrupta.</p>
+        <p>Por favor, usa un nombre distinto como
+        <span class="badge bg-primary">mi-wordpress</span> o
+        <span class="badge bg-secondary">sitio-wp</span>.</p>`,
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "📥 Instalar de todas formas",
+        denyButtonText: "✏️ Cambiar nombre",
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Instalar forzadamente con barra
+            Swal.fire({
+                title: `Instalando WordPress...`,
+                html: `
+            <p class="mb-2">Esto puede tardar unos segundos ⏳</p>
+            <div class="progress" style="height: 25px;">
+              <div id="barraInstalacion" class="progress-bar bg-success" role="progressbar" style="width: 0%">0%</div>
+            </div>
+          `,
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                    let progreso = 0;
+                    const barra = document.getElementById("barraInstalacion");
+                    const avance = setInterval(() => {
+                        progreso += Math.floor(Math.random() * 8) + 3;
+                        if (progreso >= 100) progreso = 100;
+                        if (barra) {
+                            barra.style.width = progreso + "%";
+                            barra.textContent = progreso + "%";
+                        }
+                        if (progreso === 100) clearInterval(avance);
+                    }, 300);
+                }
+            });
+
+            fetch(`${baseURL}/app/instalar-wordpress.php?carpeta=${encodeURIComponent(folder)}&idioma=${idioma}&version=${version}&forzar=1`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire("WordPress instalado correctamente", "", "success");
+                        // abrirEnWindows(folder);
+                    } else {
+                        Swal.fire("❌ Error", data.message, "error");
+                    }
+                });
+
+        } else if (result.isDenied) {
+            renameFolder(folder, () => {
+                // 🔁 Mostrar nuevamente la advertencia si se canceló el rename
+                mostrarAdvertenciaWordpress(folder, idioma, version);
+            });
+        }
+    });
 }

@@ -58,18 +58,37 @@ body:not(.dark) .card:hover {
   color: #007bff;
 }
 
+.card i.fa-ellipsis-v {
+  color: #ffffff;
+}
 /* 🎨 Hover individual por ícono */
 
 .card i.fa-folder-open:hover {
-  color: rgb(207, 7, 190);
-  /* Verde - editar */
+  color: #ffc107;
+  /*Verde-editar*/
   transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -ms-transform: scale(1.15);
+  -o-transform: scale(1.15);
+}
+
+.card i.fa-folder-minus:hover {
+  transform: scale(1.25);
+  -webkit-transform: scale(1.25);
+  -moz-transform: scale(1.25);
+  -ms-transform: scale(1.25);
+  -o-transform: scale(1.25);
 }
 
 .card i.fa-pencil-alt:hover {
   color: rgb(7, 109, 31);
-  /* Verde - editar */
+  /*Verde-editar*/
   transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -ms-transform: scale(1.15);
+  -o-transform: scale(1.15);
 }
 
 .card i.fa-trash:hover {
@@ -93,7 +112,7 @@ body:not(.dark) .card:hover {
 }
 
 .card i.fa-search:hover {
-  color: #000000;
+  color: #bd06ce;
   /*Amarillo-favorito*/
   transform: scale(1.15);
   -webkit-transform: scale(1.15);
@@ -103,7 +122,7 @@ body:not(.dark) .card:hover {
 }
 
 .card i.fa-wordpress:hover {
-  color: #081ddb;
+  color: #008b17;
   /*Amarillo-favorito*/
   transform: scale(1.15);
   -webkit-transform: scale(1.15);
@@ -680,4 +699,60 @@ body.dark .dropdown-menu.dropdown-compact .dropdown-item:hover {
 
 .dropdown-menu {
   z-index: 2000 !important;
+}
+
+/* 🔄 Skeleton animación */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: #e0e0e0;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150px;
+  height: 100%;
+  width: 150px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+/* Tarjeta skeleton como placeholder de carpeta */
+.skeleton-card {
+  height: 100px;
+  margin-bottom: 20px;
+  padding: 1rem;
+  border-radius: 10px;
+  background-color: #f1f1f1;
+}
+body.dark .skeleton-card {
+  background-color: #3a3a3a;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -150px;
+  }
+  100% {
+    left: 100%;
+  }
 }

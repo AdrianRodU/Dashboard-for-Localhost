@@ -53,7 +53,7 @@ function eliminarCarpeta($carpeta)
                                   $dir = __DIR__;
                                   $archivos = scandir($dir);
                                   $carpetas = [];
-                                  $carpetasOcultas = ['dashboard', 'assets', 'img', 'webalizer', 'xampp'];
+                                  $carpetasOcultas = ['dashboard', 'assets', 'img', 'webalizer', 'xampp', 'app', 'preview'];
                                   foreach ($archivos as $archivo) {
                                     $ruta = $dir . DIRECTORY_SEPARATOR . $archivo;
                                     if (
