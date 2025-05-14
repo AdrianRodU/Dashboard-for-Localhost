@@ -112,17 +112,16 @@ function activarTooltips(contenedor = document) {
     const tooltipElements = contenedor.querySelectorAll('[data-bs-toggle="tooltip"]');
 
     tooltipElements.forEach(el => {
-        // Si ya existe, destruye para reiniciar correctamente
-        const oldTooltip = bootstrap.Tooltip.getInstance(el);
-        if (oldTooltip) oldTooltip.dispose();
+        const existing = bootstrap.Tooltip.getInstance(el);
+        if (existing) existing.dispose(); // eliminar si ya existe
+        const tip = new bootstrap.Tooltip(el);
 
-        // Crea uno nuevo con el contenido actualizado
-        const tooltip = new bootstrap.Tooltip(el);
-
-        // Oculta el tooltip al hacer clic para evitar que se congele
-        el.addEventListener("click", () => tooltip.hide());
+        el.addEventListener("click", () => {
+            tip.hide(); // evitar que se quede congelado
+        });
     });
 }
+
 
 
 
@@ -423,18 +422,20 @@ function renderCarpetas(foldersAnimadas = []) {
             header.appendChild(name);
 
             const controls = document.createElement("div");
-            controls.className = "d-flex justify-content-between";
+            controls.className = "d-flex justify-content-between align-items-center";
 
-            const icons = [
-                { icon: "fa-pencil-alt", title: "Cambiar nombre", action: () => renameFolder(folder) },
-                { icon: "fa-trash", title: "Eliminar carpeta", action: () => deleteFolder(folder) },
+            // 🔹 Contenedor para los íconos de acción directa
+            const leftIcons = document.createElement("div");
+            leftIcons.className = "d-flex gap-2";
+
+            // Íconos visibles directamente
+            const accionesDirectas = [
                 { icon: "fa-star", title: "Agregar a favoritos", action: (e) => toggleFavorite(folder, e.target) },
-                { icon: "fa-folder-open d-none d-md-inline", title: "Abrir carpeta en Windows", action: () => abrirEnWindows(folder) },
-                { icon: "fa-eye-slash", title: "Ocultar carpeta", action: () => hideFolder(folder) },
                 { icon: "fa-search", title: "Vista previa", action: () => verContenidoCarpeta(folder) },
+                { icon: "fab fa-wordpress text-primary", title: "Instalar WordPress", action: () => instalarWordPress(folder) }
             ];
 
-            icons.forEach(({ icon, title, action }) => {
+            accionesDirectas.forEach(({ icon, title, action }) => {
                 const i = document.createElement("i");
                 i.className = `fas ${icon}`;
                 i.dataset.bsToggle = "tooltip";
@@ -446,8 +447,135 @@ function renderCarpetas(foldersAnimadas = []) {
                     if (tip) tip.hide();
                     action(e);
                 };
-                controls.appendChild(i);
+                leftIcons.appendChild(i);
             });
+
+            // 🔹 Contenedor para el dropdown
+            const dropdown = document.createElement("div");
+            dropdown.className = "dropdown ms-auto"; // <-- esto lo alinea a la derecha
+
+            const toggleBtn = document.createElement("button");
+            toggleBtn.className = "btn btn-sm btn-outline-secondary dropdown-toggle";
+            toggleBtn.setAttribute("data-bs-toggle", "dropdown");
+            toggleBtn.setAttribute("aria-expanded", "false");
+            toggleBtn.innerHTML = ` <i class="fas fa-ellipsis-v"></i> `;
+            dropdown.appendChild(toggleBtn);
+
+            // Menú interno del dropdown
+            const menu = document.createElement("ul");
+            menu.className = "dropdown-menu dropdown-menu-end dropdown-compact";
+
+            // Elementos del menú
+            // Ocultar Carpeta
+            const liOcultarCar = document.createElement("li");
+            const aHide = document.createElement("a");
+            aHide.className = "dropdown-item d-flex justify-content-center";
+            aHide.href = "#";
+
+            const iconHide = document.createElement("i");
+            iconHide.className = "fas fa-eye-slash text-primary fs-6";
+            iconHide.setAttribute("title", "Ocultar carpeta");
+            iconHide.setAttribute("data-bs-toggle", "tooltip");
+            iconHide.setAttribute("data-bs-placement", "right");
+
+            aHide.appendChild(iconHide);
+            aHide.addEventListener("click", (e) => {
+                e.preventDefault();
+                hideFolder(folder);
+            });
+            liOcultarCar.appendChild(aHide);
+
+            requestAnimationFrame(() => {
+                new bootstrap.Tooltip(iconHide);
+            });
+
+
+            // Renombrar carpeta
+            const liRename = document.createElement("li");
+            const aRename = document.createElement("a");
+            aRename.className = "dropdown-item d-flex justify-content-center";
+            aRename.href = "#";
+
+            const iconRename = document.createElement("i");
+            iconRename.className = "fas fa-pencil-alt text-success fs-6";
+            iconRename.setAttribute("title", "Renombrar");
+            iconRename.setAttribute("data-bs-toggle", "tooltip");
+            iconRename.setAttribute("data-bs-placement", "right");
+
+            aRename.appendChild(iconRename);
+            aRename.addEventListener("click", (e) => {
+                e.preventDefault();
+                renameFolder(folder);
+            });
+            liRename.appendChild(aRename);
+
+            // Inicializar tooltip manualmente en el ícono
+            requestAnimationFrame(() => {
+                new bootstrap.Tooltip(iconRename);
+            });
+
+            // Eliminar Carpeta
+            const liDelete = document.createElement("li");
+            const aDelete = document.createElement("a");
+            aDelete.className = "dropdown-item d-flex justify-content-center";
+            aDelete.href = "#";
+
+            const iconDelete = document.createElement("i");
+            iconDelete.className = "fas fa-trash text-danger fs-6";
+            iconDelete.setAttribute("title", "Eliminar");
+            iconDelete.setAttribute("data-bs-toggle", "tooltip");
+            iconDelete.setAttribute("data-bs-placement", "right");
+
+            aDelete.appendChild(iconDelete);
+            aDelete.addEventListener("click", (e) => {
+                e.preventDefault();
+                deleteFolder(folder);
+            });
+            liDelete.appendChild(aDelete);
+
+            requestAnimationFrame(() => {
+                new bootstrap.Tooltip(iconDelete);
+            });
+
+            // Abrir en Windows
+            const liOpen = document.createElement("li");
+            const aOpen = document.createElement("a");
+            aOpen.className = "dropdown-item d-flex justify-content-center";
+            aOpen.href = "#";
+
+            const iconOpen = document.createElement("i");
+            iconOpen.className = "fas fa-folder-open text-warning fs-6";
+            iconOpen.setAttribute("title", "Abrir en Windows");
+            iconOpen.setAttribute("data-bs-toggle", "tooltip");
+            iconOpen.setAttribute("data-bs-placement", "right");
+
+            aOpen.appendChild(iconOpen);
+            aOpen.addEventListener("click", (e) => {
+                e.preventDefault();
+                abrirEnWindows(folder);
+            });
+            liOpen.appendChild(aOpen);
+
+            requestAnimationFrame(() => {
+                new bootstrap.Tooltip(iconOpen);
+            });
+
+            // Llamado al Dropdown
+            menu.appendChild(liRename);
+            menu.appendChild(liDelete);
+            menu.appendChild(liOcultarCar);
+            menu.appendChild(liOpen);
+
+            dropdown.appendChild(menu);
+
+            dropdown.addEventListener("shown.bs.dropdown", () => {
+                activarTooltips(menu);
+            });
+
+            // Añadir a controles
+            controls.appendChild(leftIcons);
+            controls.appendChild(dropdown);
+            activarTooltips(dropdown);
 
             card.appendChild(header);
             card.appendChild(controls);
@@ -463,6 +591,7 @@ function renderCarpetas(foldersAnimadas = []) {
             }
 
             activarTooltips(card);
+
         }
     });
 
@@ -480,7 +609,6 @@ function renderCarpetas(foldersAnimadas = []) {
         mensajeSinLocales.classList.toggle("d-none", totalVisibles > 0);
     }
 }
-
 
 // Dibuja las carpetas favoritas en el grid superior
 function updateFavorites(folderAnimado = null) {
@@ -521,6 +649,7 @@ function updateFavorites(folderAnimado = null) {
         const icons = [
             { icon: "fa-folder-open d-none d-md-inline", title: "Abrir carpeta en Windows", action: () => abrirEnWindows(folder) },
             { icon: "fa-search", title: "Vista previa", action: () => verContenidoCarpeta(folder) },
+            { icon: "fab fa-wordpress text-primary", title: "Instalar WordPress", action: () => instalarWordPress(folder) },
             { icon: "fa-times text-danger", title: "Quitar de favoritos", action: (e) => removeFavorite(e, folder) },
         ];
 
@@ -958,7 +1087,6 @@ function crearCarpeta() {
         });
 }
 
-
 // Muestra un prompt para renombrar una carpeta y envía el formulario al servidor
 function renameFolder(folder) {
     let resultadoSwal = null;
@@ -1064,8 +1192,6 @@ function renameFolder(folder) {
         });
 }
 
-
-
 // Muestra confirmación para eliminar una carpeta y envía el formulario
 function deleteFolder(folder) {
     Swal.fire({
@@ -1138,6 +1264,16 @@ function deleteFolder(folder) {
         // ✅ Si NO confirmó, salimos
         if (!result.isConfirmed) return;
 
+        Swal.fire({
+            title: "Eliminando carpeta...",
+            text: `Esto puede tardar unos segundos si contiene muchos archivos. ⏳`,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+
         // ✅ Si SÍ confirmó, procedemos a eliminar la carpeta
         fetch(window.location.pathname, {
             method: "POST",
@@ -1163,7 +1299,10 @@ function deleteFolder(folder) {
 
                     showToast(`Carpeta "${folder}" eliminada correctamente`, "success", "custom-success");
                 });
+        }).catch((error) => {
+            Swal.fire("❌ Error", "No se pudo eliminar la carpeta.", "error");
         });
+
     });
 }
 
@@ -1457,3 +1596,108 @@ window.addEventListener("resize", () => {
         bsOffcanvas?.hide();
     }
 });
+
+// Permite instalar la última versión de WordPress directo a la carpeta
+function instalarWordPress(folder) {
+    Swal.fire({
+        title: `Instalar WordPress en "${folder}"`,
+        html: `
+          <div class="swal2-form-group text-start mb-3">
+            <label class="form-label d-block mb-1"><i class="fa-solid fa-globe"></i> Idioma / Región</label>
+            <select id="idiomaWp" class="form-select">
+              <option value="latest" selected>🌐 Español (Internacional)</option>
+              <option value="es_PE">🇵🇪 Español (Perú)</option>
+              <option value="es_ES">🇪🇸 Español (España)</option>
+              <option value="es_MX">🇲🇽 Español (México)</option>
+              <option value="en_US">🇺🇸 Inglés (EEUU)</option>
+            </select>
+          </div>
+
+          <div class="swal2-form-group mb-2 text-start">
+            <label class="form-label d-block mb-1"><i class="fa-solid fa-code-branch"></i> Versión</label>
+               <select id="versionesWp" class="form-select flex-fill" disabled>
+                <option value="">⏳ Cargando versiones...</option>
+              </select>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "📥 Instalar",
+        cancelButtonText: "Cancelar",
+        didOpen: () => {
+            const selector = document.getElementById("versionesWp");
+
+            if (selector) {
+                fetch("obtener-versiones.php")
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log("🧪 Versiones obtenidas:", data);
+                        selector.innerHTML = "";
+                        selector.disabled = false;
+
+                        selector.appendChild(new Option("latest (Recomendada)", "latest"));
+
+                        data.forEach(ver => {
+                            selector.appendChild(new Option(ver, ver));
+                        });
+
+                        selector.value = "latest";
+                    })
+                    .catch(() => {
+                        selector.innerHTML = `<option value="latest">latest</option>`;
+                        selector.disabled = false;
+
+                        // 🛑 Mostrar error al usuario
+                        Swal.fire({
+                            icon: "warning",
+                            title: "No se pudo cargar la lista de versiones",
+                            text: "Se usará la opción 'latest' por defecto.",
+                            toast: true,
+                            position: "top-end",
+                            timer: 4000,
+                            showConfirmButton: false
+                        });
+                    });
+            }
+        },
+        preConfirm: () => {
+            const idioma = document.getElementById("idiomaWp").value;
+            const version = document.getElementById("versionesWp").value || "latest";
+            return { idioma, version };
+        }
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        const { idioma, version } = result.value;
+
+        Swal.fire({
+            title: "Descargando WordPress...",
+            text: `Por favor espera unos segundos ⏳`,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        fetch(`instalar-wordpress.php?carpeta=${encodeURIComponent(folder)}&idioma=${idioma}&version=${version}`)
+            .then(async (res) => {
+                try {
+                    const data = await res.json();
+                    return data;
+                } catch (err) {
+                    throw new Error("Respuesta no válida del servidor");
+                }
+            })
+            .then((data) => {
+                if (data.success) {
+                    Swal.fire("WordPress instalado correctamente", "", "success");
+                    // abrirEnWindows(folder);
+                } else {
+                    Swal.fire("Error", data.message || "Ocurrió un problema", "error");
+                }
+            })
+            .catch((error) => {
+                Swal.fire("Error inesperado", error.message, "error");
+            });
+    });
+
+}

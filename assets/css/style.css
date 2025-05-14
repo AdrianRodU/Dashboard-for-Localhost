@@ -40,6 +40,7 @@ body.dark .modal-content {
   position: relative;
   transition: transform 0.25s ease, box-shadow 0.25s ease,
     background-color 0.3s ease;
+  z-index: 1000 !important;
 }
 
 /* Solo en modo claro */
@@ -73,20 +74,52 @@ body:not(.dark) .card:hover {
 
 .card i.fa-trash:hover {
   color: #dc3545;
-  /* Rojo - eliminar */
+  /*Rojo-eliminar*/
   transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -ms-transform: scale(1.15);
+  -o-transform: scale(1.15);
 }
 
 .card i.fa-star:hover {
   color: #ffc107;
-  /* Amarillo - favorito */
+  /*Amarillo-favorito*/
   transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -ms-transform: scale(1.15);
+  -o-transform: scale(1.15);
+}
+
+.card i.fa-search:hover {
+  color: #000000;
+  /*Amarillo-favorito*/
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -ms-transform: scale(1.15);
+  -o-transform: scale(1.15);
+}
+
+.card i.fa-wordpress:hover {
+  color: #081ddb;
+  /*Amarillo-favorito*/
+  transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -ms-transform: scale(1.15);
+  -o-transform: scale(1.15);
 }
 
 .card i.fa-eye-slash:hover {
   color: #6c757d;
-  /* Gris oscuro - ocultar (modo claro) */
+  /*Grisoscuro-ocultar(modoclaro)*/
   transform: scale(1.15);
+  -webkit-transform: scale(1.15);
+  -moz-transform: scale(1.15);
+  -ms-transform: scale(1.15);
+  -o-transform: scale(1.15);
 }
 
 /* Ajuste para modo oscuro */
@@ -575,4 +608,76 @@ body.dark .card:hover {
 
 .swal2-popup.shake-error {
   animation: shake-error 0.4s ease !important;
+}
+
+/* Íconos dentro del dropdown más centrados */
+.dropdown-menu .dropdown-item {
+  width: 100%;
+  padding: 8px 10px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Tamaño uniforme de íconos */
+.dropdown-menu .dropdown-item i {
+  font-size: 1.2rem;
+}
+
+/* Modo oscuro */
+body.dark .dropdown-menu {
+  background-color: #2c2c2c;
+  border-color: #444;
+}
+
+body.dark .dropdown-menu .dropdown-item {
+  color: #fff;
+}
+
+body.dark .dropdown-menu .dropdown-item:hover {
+  background-color: #444;
+}
+
+/* 🟢 Dropdown súper compacto solo para íconos */
+.dropdown-menu.dropdown-compact {
+  min-width: auto;
+  width: auto;
+  padding: 4px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 🔵 Ítems solo íconos */
+.dropdown-menu.dropdown-compact .dropdown-item {
+  padding: 6px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  margin: 2px auto;
+}
+
+.dropdown-menu.dropdown-compact .dropdown-item i {
+  font-size: 1.1rem;
+}
+
+/* 🌙 Modo oscuro */
+body.dark .dropdown-menu.dropdown-compact {
+  background-color: #2c2c2c;
+  border-color: #444;
+}
+
+body.dark .dropdown-menu.dropdown-compact .dropdown-item {
+  color: #fff;
+}
+
+body.dark .dropdown-menu.dropdown-compact .dropdown-item:hover {
+  background-color: #444;
+}
+
+.dropdown-menu {
+  z-index: 2000 !important;
 }
