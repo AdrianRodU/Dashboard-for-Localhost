@@ -61,9 +61,21 @@ try {
     $archivoZip = $ruta . DIRECTORY_SEPARATOR . 'wordpress.zip';
     $contenidoZip = @file_get_contents($url);
     if (!$contenidoZip) {
-        echo json_encode(['success' => false, 'message' => 'No se pudo descargar WordPress. Verifica la versión o idioma.']);
+        echo json_encode([
+            'success' => false,
+            'message' => '
+            <p><strong>No se pudo descargar WordPress.</strong></p>
+            <ul class="text-start">
+                <li>🌐 Verifica tu conexión a Internet</li>
+                <li>📦 Revisa que la versión o idioma de WordPress sea válida</li>
+                <li>🔄 Intenta nuevamente en unos segundos</li>
+            </ul>
+            <p class="mt-2">Si el problema persiste, puedes instalar WordPress manualmente desde <a href="https://wordpress.org" target="_blank">wordpress.org</a>.</p>
+        '
+        ]);
         exit;
     }
+
 
     file_put_contents($archivoZip, $contenidoZip);
 

@@ -1979,15 +1979,7 @@ function instalarWordPress(folder) {
 
                                     }
                                     else if (data.message.includes("ZipArchive")) {
-                                        Swal.fire({
-                                            icon: "warning",
-                                            title: "Extensión de PHP faltante",
-                                            html: data.message,
-                                            confirmButtonText: "Entendido",
-                                            customClass: {
-                                                popup: "swal2-modal-carpetas"
-                                            }
-                                        });
+                                        mostrarErrorBackend(data.message, "Extensión de PHP faltante");
                                         return;
                                     }
                                     else if (result.isDenied) {
@@ -2079,6 +2071,19 @@ function mostrarAdvertenciaWordpress(folder, idioma, version) {
                 // 🔁 Mostrar nuevamente la advertencia si se canceló el rename
                 mostrarAdvertenciaWordpress(folder, idioma, version);
             });
+        }
+    });
+}
+
+// Mostrar errores de los archivos php directamente
+function mostrarErrorBackend(mensaje, titulo = "Error del servidor") {
+    Swal.fire({
+        icon: "error",
+        title: titulo,
+        html: mensaje,
+        confirmButtonText: "Cerrar",
+        customClass: {
+            popup: "swal2-modal-carpetas"
         }
     });
 }
