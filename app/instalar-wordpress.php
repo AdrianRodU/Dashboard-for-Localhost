@@ -26,12 +26,12 @@ try {
             'success' => false,
             'message' => '
                 <p><b>Error:</b> No puedes instalar WordPress en una carpeta llamada
-                <span class="badge bg-danger">wordpress</span>.</p>
-                <p>Esto causaría una estructura duplicada como
-                <code>wordpress/wordpress/</code> y una instalación corrupta.</p>
-                <p>Por favor, usa un nombre distinto como
-                <span class="badge bg-primary">mi-wordpress</span> o
-                <span class="badge bg-secondary">sitio-wp</span>.</p>'
+        <span class="badge bg-danger">wordpress</span></p>
+        <p>Esto causaría una estructura duplicada como
+        <code>wordpress/wordpress/</code> y una instalación corrupta.</p>
+        <p>Por favor, usa un nombre distinto como
+        <span class="badge bg-primary">mi-wordpress</span> o
+        <span class="badge bg-secondary">sitio-wp</span>.</p>'
         ]);
         exit;
     }
@@ -66,6 +66,25 @@ try {
     }
 
     file_put_contents($archivoZip, $contenidoZip);
+
+    if (!class_exists('ZipArchive')) {
+        echo json_encode([
+            "success" => false,
+            "message" => "<p><strong>Error Interno</strong>: El servidor no tiene habilitada la extensión <code>zip</code> de PHP.</p>
+                                              <p>Esta extensión es necesaria para poder instalar <span class='badge bg-primary'>WordPress</span> automáticamente desde el panel.</p>
+                                              <hr class='divider'>
+                                              <p class='text-start'><strong>¿Cómo solucionarlo?</strong></p>
+                                              <ul class='text-start list-unstyled'>
+                                                <li>🔧 Abre el archivo <code>php.ini</code></li>
+                                                <li>🔍 Busca: <code>;extension=zip</code></li>
+                                                <li>✅ Quita el punto y coma: <code>extension=zip</code></li>
+                                                <li>💾 Guarda los cambios</li>
+                                                <li>🔄 Reinicia Apache</li>
+                                              </ul>
+                                              <p class='mt-3'>Luego de eso, vuelve a intentar instalar WordPress. 😄</p>",
+        ]);
+        exit;
+    }
 
     $zip = new ZipArchive;
     if ($zip->open($archivoZip) === TRUE) {

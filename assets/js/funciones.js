@@ -298,7 +298,7 @@ function cambiarNombreUsuario() {
                             confirmButton: 'btn btn-danger',   // rojo de Bootstrap
                             cancelButton: 'btn btn-secondary'
                         },
-                        reverseButtons: true
+                        reverseButtons: false
                     }).then((result) => {
                         if (result.isConfirmed) {
                             localStorage.removeItem(clave);
@@ -1919,7 +1919,8 @@ function instalarWordPress(folder) {
                                     showCancelButton: true,
                                     confirmButtonText: "📥 Instalar de todas formas",
                                     denyButtonText: "✏️ Cambiar nombre",
-                                    cancelButtonText: "Cancelar"
+                                    cancelButtonText: "Cancelar",
+                                    reverseButtons: false
                                 }).then((result) => {
                                     if (result.isConfirmed) {
                                         // Instalar forzadamente con barra
@@ -1956,10 +1957,38 @@ function instalarWordPress(folder) {
                                                     Swal.fire("WordPress instalado correctamente", "", "success");
                                                     // abrirEnWindows(folder);
                                                 } else {
-                                                    Swal.fire("❌ Error", data.message, "error");
+                                                    Swal.fire({
+                                                        icon: "warning",
+                                                        title: "Extensión de PHP faltante",
+                                                        html: data.message,
+                                                        customClass: {
+                                                            popup: "swal2-modal-carpetas"
+                                                        },
+                                                        showCancelButton: true,
+                                                        showConfirmButton: true,
+                                                        confirmButtonText: "🔂 Volver a Intentarlo",
+                                                        cancelButtonText: "Cerrar",
+                                                        reverseButtons: false
+                                                    }).then(result => {
+                                                        if (result.isConfirmed) {
+                                                            instalarWordPress(folder);
+                                                        }
+                                                    });
                                                 }
                                             });
 
+                                    }
+                                    else if (data.message.includes("ZipArchive")) {
+                                        Swal.fire({
+                                            icon: "warning",
+                                            title: "Extensión de PHP faltante",
+                                            html: data.message,
+                                            confirmButtonText: "Entendido",
+                                            customClass: {
+                                                popup: "swal2-modal-carpetas"
+                                            }
+                                        });
+                                        return;
                                     }
                                     else if (result.isDenied) {
                                         renameFolder(folder, () => {
@@ -1971,15 +2000,17 @@ function instalarWordPress(folder) {
                             } else {
                                 Swal.fire({
                                     icon: "error",
-                                    title: "Error",
+                                    title: "🚨 Problema de servidor",
                                     html: data.message,
                                     showCancelButton: true,
-                                    confirmButtonText: "Abrir carpeta en Explorer",
+                                    showConfirmButton: true,
+                                    confirmButtonText: "🔂 Volver a Intentarlo",
                                     cancelButtonText: "Cerrar",
-                                    reverseButtons: true
+                                    reverseButtons: false
                                 }).then(result => {
                                     if (result.isConfirmed) {
-                                        abrirEnWindows(folder);
+                                        // abrirEnWindows(folder);
+                                        instalarWordPress(folder);
                                     }
                                 });
                             }
@@ -1997,14 +2028,7 @@ function mostrarAdvertenciaWordpress(folder, idioma, version) {
     Swal.fire({
         icon: "warning",
         title: "⚠️ Carpeta no recomendada",
-        html: `
-        <p><b>Error:</b> No puedes instalar WordPress en una carpeta llamada
-        <span class="badge bg-danger">wordpress</span>.</p>
-        <p>Esto causaría una estructura duplicada como
-        <code>wordpress/wordpress/</code> y una instalación corrupta.</p>
-        <p>Por favor, usa un nombre distinto como
-        <span class="badge bg-primary">mi-wordpress</span> o
-        <span class="badge bg-secondary">sitio-wp</span>.</p>`,
+        html: data.message,
         showDenyButton: true,
         showCancelButton: true,
         confirmButtonText: "📥 Instalar de todas formas",
@@ -2046,7 +2070,7 @@ function mostrarAdvertenciaWordpress(folder, idioma, version) {
                         Swal.fire("WordPress instalado correctamente", "", "success");
                         // abrirEnWindows(folder);
                     } else {
-                        Swal.fire("❌ Error", data.message, "error");
+                        Swal.fire("🚨 Problema de servidor", data.message, "error");
                     }
                 });
 
