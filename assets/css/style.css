@@ -4,7 +4,7 @@ body {
   margin: 0;
   padding: 0;
   color: #333;
-  transition: background-color 0.3s, color 0.3s;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 body.dark {
@@ -38,9 +38,15 @@ body.dark .modal-content {
   text-decoration: none;
   color: inherit;
   position: relative;
-  transition: transform 0.25s ease, box-shadow 0.25s ease,
-    background-color 0.3s ease;
-  z-index: 1000 !important;
+  z-index: 1;
+  overflow: visible !important;
+
+  transition: background-color 0.5s ease, color 0.5s ease, box-shadow 0.3s ease,
+    transform 0.3s ease; /* Agregado */
+}
+
+.card.z-top {
+  z-index: 1050 !important; /* Superior a dropdown */
 }
 
 /* Solo en modo claro */
@@ -144,12 +150,6 @@ body:not(.dark) .card:hover {
 /* Ajuste para modo oscuro */
 body.dark .card i.fa-eye-slash:hover {
   color: #ffffff;
-}
-
-/* 🎨 Ajuste para ícono ocultar en modo oscuro */
-body.dark .card i.fa-eye-slash:hover {
-  color: #ffffff;
-  /* Blanco en modo oscuro */
 }
 
 /* BOTÓN HAMBURGUESA: borde blanco en modo oscuro */
@@ -340,7 +340,7 @@ body:not(.dark) .navbar-toggler-icon {
 }
 
 .carpeta-nueva {
-  animation: resaltadoNuevo 0.4s ease-in-out;
+  animation: resaltadoNuevo 0.4s ease-in-out, fadeZoomIn 0.5s ease;
   background-color: #d4edda !important;
   border: 2px solid #28a745;
 }
@@ -349,16 +349,14 @@ body:not(.dark) .navbar-toggler-icon {
   0% {
     background-color: #c3e6cb;
     transform: scale(1.03);
+    filter: brightness(1.2);
   }
 
   100% {
     background-color: #d4edda;
     transform: scale(1);
+    filter: brightness(1);
   }
-}
-
-.carpeta-nueva {
-  animation: fadeZoomIn 0.5s ease;
 }
 
 .fade-in {
@@ -379,29 +377,17 @@ body:not(.dark) .navbar-toggler-icon {
 /* 💡 Estilo resaltado en MODO CLARO */
 body:not(.dark) .carpeta-nueva {
   background-color: #d4edda !important;
-  /* verde claro */
   border: 2px solid #28a745;
-  animation: resaltadoNuevo 0.4s ease-in-out;
+  animation: resaltadoNuevo 0.4s ease-in-out,
+    saltito 0.6s ease-in-out 0s infinite;
 }
-
 /* 💡 Estilo resaltado en MODO OSCURO */
 body.dark .carpeta-nueva {
   background-color: #305c3e !important;
-  /* verde oscuro */
+  /*verdeoscuro*/
   border: 2px solid #50fa7b;
   animation: resaltadoNuevo 0.4s ease-in-out;
-}
-
-@keyframes resaltadoNuevo {
-  0% {
-    transform: scale(1.03);
-    filter: brightness(1.2);
-  }
-
-  100% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
+  -webkit-animation: resaltadoNuevo 0.4s ease-in-out;
 }
 
 @keyframes saltito {
@@ -425,13 +411,6 @@ body.dark .carpeta-nueva {
   90% {
     transform: translateY(1px);
   }
-}
-
-body:not(.dark) .carpeta-nueva {
-  background-color: #d4edda !important;
-  border: 2px solid #28a745;
-  animation: resaltadoNuevo 0.4s ease-in-out,
-    saltito 0.6s ease-in-out 0s infinite;
 }
 
 body.dark .carpeta-nueva {
@@ -614,14 +593,26 @@ body.dark .card:hover {
   0%,
   100% {
     transform: translateX(0);
+    -webkit-transform: translateX(0);
+    -moz-transform: translateX(0);
+    -ms-transform: translateX(0);
+    -o-transform: translateX(0);
   }
   20%,
   60% {
     transform: translateX(-10px);
+    -webkit-transform: translateX(-10px);
+    -moz-transform: translateX(-10px);
+    -ms-transform: translateX(-10px);
+    -o-transform: translateX(-10px);
   }
   40%,
   80% {
     transform: translateX(10px);
+    -webkit-transform: translateX(10px);
+    -moz-transform: translateX(10px);
+    -ms-transform: translateX(10px);
+    -o-transform: translateX(10px);
   }
 }
 
@@ -629,13 +620,52 @@ body.dark .card:hover {
   animation: shake-error 0.4s ease !important;
 }
 
+@keyframes cambioModoIcono {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -o-transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+    -webkit-transform: scale(1.2);
+    -moz-transform: scale(1.2);
+    -ms-transform: scale(1.2);
+    -o-transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -o-transform: scale(1);
+  }
+}
+
+#modoDropdownBtn.animar-icono {
+  animation: cambioModoIcono 0.4s ease;
+}
+
+#modoDropdownBtn.btn-light {
+  border: 1px solid #ccc;
+}
+
+#modoDropdownBtn.btn-dark {
+  border: 1px solid #666;
+}
+
 /* Íconos dentro del dropdown más centrados */
 .dropdown-menu .dropdown-item {
   width: 100%;
   padding: 8px 10px;
-  text-align: center;
+  /* text-align: center; */
   display: flex;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: center;
 }
 
@@ -698,7 +728,22 @@ body.dark .dropdown-menu.dropdown-compact .dropdown-item:hover {
 }
 
 .dropdown-menu {
-  z-index: 2000 !important;
+  z-index: 1000 !important; /* asegúrate que sea más alto que el .card */
+  overflow: visible;
+}
+
+.dropdown.show .dropdown-menu {
+  display: block;
+}
+
+.dropdown {
+  position: relative; /* importante para que se posicione dentro de la card */
+}
+
+.row,
+.col-md-3,
+.col-sm-6 {
+  overflow: visible !important;
 }
 
 /* 🔄 Skeleton animación */

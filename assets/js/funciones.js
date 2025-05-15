@@ -101,6 +101,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const isDark = localStorage.getItem(claveModoOscuro) === "true";
     if (isDark) document.body.classList.add("dark");
+
+    modoAutoPorHora(); // Aplica modo según hora si no hay preferencia guardada
+    setInterval(modoAutoPorHora, 10 * 60 * 1000); // Revisa cada 10 minutos
+
     actualizarTextoModo(); // Esto actualizará textos e íconos
 
     setInterval(() => {
@@ -114,6 +118,25 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(() => {
             showToast("🧹 Archivos temporales limpiados", "info", "custom-info");
         });
+
+    // OffCanvas Modos Claro - Oscuro
+    const offBtn = document.getElementById("modoOffcanvasBtn");
+    if (offBtn) {
+        offBtn.addEventListener("click", () => {
+            const isDark = document.body.classList.contains("dark");
+            const hayPreferenciaManual = localStorage.getItem(claveModoOscuro) !== null;
+
+            if (!hayPreferenciaManual) {
+                activarModoOscuro(); // cambia a oscuro manual
+            } else if (isDark) {
+                activarModoClaro(); // cambia a claro manual
+            } else {
+                activarModoAutomatico(); // cambia a automático
+            }
+        });
+    }
+
+
 });
 
 function activarTooltips(contenedor = document) {
@@ -467,6 +490,18 @@ function renderCarpetas(foldersAnimadas = []) {
             toggleBtn.innerHTML = ` <i class="fas fa-ellipsis-v"></i> `;
             dropdown.appendChild(toggleBtn);
 
+            toggleBtn.addEventListener("click", () => {
+                // Elimina z-top de todas las tarjetas
+                document.querySelectorAll(".card.z-top").forEach(c => c.classList.remove("z-top"));
+
+                // Aplica z-top a esta tarjeta activa
+                card.classList.add("z-top");
+            });
+
+            dropdown.addEventListener("hidden.bs.dropdown", () => {
+                card.classList.remove("z-top");
+            });
+
             // Menú interno del dropdown
             const menu = document.createElement("ul");
             menu.className = "dropdown-menu dropdown-menu-end dropdown-compact";
@@ -715,16 +750,76 @@ function updateFavorites(folderAnimado = null) {
 
 // Sincroniza los textos de los botones con el estado del modo oscuro
 function actualizarTextoModo() {
-    const isDark = localStorage.getItem(claveModoOscuro) === "true";
+    const isDark = document.body.classList.contains("dark");
+    const hayPreferenciaManual = localStorage.getItem(claveModoOscuro) !== null;
 
-    // Cambia el texto de todos los botones con esa clase
-    document.querySelectorAll(".modoOscuroTexto").forEach((el) => {
-        el.textContent = isDark ? "☀️ Modo Claro" : "🌙 Modo Oscuro";
-    });
-
-    // Cambia el ícono del botón hamburguesa superior
+    // BOTÓN SUPERIOR (Dropdown de escritorio)
     const icono = document.getElementById("modoDropdownBtn");
-    if (icono) icono.textContent = isDark ? "☀️" : "🌙";
+    if (icono) {
+        icono.textContent = hayPreferenciaManual
+            ? (isDark ? "🌙" : "☀️")
+            : "🌗";
+        icono.classList.remove("btn-light", "btn-dark");
+        icono.classList.add(isDark ? "btn-dark" : "btn-light");
+        icono.classList.add("animar-icono");
+        setTimeout(() => icono.classList.remove("animar-icono"), 400);
+    }
+
+    // BOTÓN EN OFFCANVAS
+    const offBtn = document.getElementById("modoOffcanvasBtn");
+    if (offBtn) {
+        if (!hayPreferenciaManual) {
+            offBtn.textContent = "🌗 Modo Automático";
+        } else {
+            offBtn.textContent = isDark ? "☀️ Modo Claro" : "🌙 Modo Oscuro";
+        }
+
+        // Cambiar color del botón para que combine
+        offBtn.classList.remove("btn-light", "btn-dark");
+        offBtn.classList.add(isDark ? "btn-dark" : "btn-light");
+
+        // (Opcional) Animación
+        offBtn.classList.add("animar-icono");
+        setTimeout(() => offBtn.classList.remove("animar-icono"), 400);
+    }
+
+    // ACTIVAR OPCIÓN EN EL DROPDOWN
+    const claro = document.getElementById("opcionModoClaro");
+    const oscuro = document.getElementById("opcionModoOscuro");
+    const auto = document.getElementById("opcionModoAuto");
+
+    [claro, oscuro, auto].forEach(op => op?.classList.remove("active"));
+
+    if (!hayPreferenciaManual) {
+        auto?.classList.add("active");
+    } else if (isDark) {
+        oscuro?.classList.add("active");
+    } else {
+        claro?.classList.add("active");
+    }
+}
+
+
+// Activar modos de pantalla
+function activarModoClaro() {
+    document.body.classList.remove("dark");
+    localStorage.setItem(claveModoOscuro, "false");
+    actualizarTextoModo();
+    showToast("Modo claro activado ☀️", "info", "custom-info");
+}
+
+function activarModoOscuro() {
+    document.body.classList.add("dark");
+    localStorage.setItem(claveModoOscuro, "true");
+    actualizarTextoModo();
+    showToast("Modo oscuro activado 🌙", "info", "custom-info");
+}
+
+function activarModoAutomatico() {
+    localStorage.removeItem(claveModoOscuro); // borra preferencia
+    modoAutoPorHora();                        // aplica según hora actual
+    actualizarTextoModo();                    // actualiza textos
+    showToast("Modo automático activado 🌗", "info", "custom-info");
 }
 
 // Cambia entre modo claro y oscuro, actualiza íconos y textos
@@ -736,6 +831,25 @@ function toggleDarkMode() {
 
     // Actualizar todos los textos e íconos de modo
     actualizarTextoModo();
+}
+
+// Automáticamente cambia el modo claro y modo oscuro por horas
+function modoAutoPorHora() {
+    const hora = new Date().getHours();
+    const esDeNoche = hora >= 20 || hora < 7;
+
+    const forzadoUsuario = localStorage.getItem(claveModoOscuro); // "true" o "false" o null
+    const yaTieneDark = document.body.classList.contains("dark");
+
+    if (forzadoUsuario === null) {
+        // Solo aplicar si el usuario no ha forzado manualmente
+        if (esDeNoche && !yaTieneDark) {
+            document.body.classList.add("dark");
+        } else if (!esDeNoche && yaTieneDark) {
+            document.body.classList.remove("dark");
+        }
+        actualizarTextoModo();
+    }
 }
 
 // Cierra cualquier modal abierto y luego muestra el contenido de otra carpeta

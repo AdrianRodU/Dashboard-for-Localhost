@@ -40,6 +40,7 @@ function eliminarCarpeta($carpeta)
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -73,6 +74,7 @@ function eliminarCarpeta($carpeta)
   </script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
   <!-- <div class="position-fixed top-0 end-0 m-3 d-flex flex-column gap-2" style="z-index:1000;">
     <button class="btn btn-outline-dark" onclick="toggleDarkMode()" title="Modo oscuro">🌙</button>
@@ -104,16 +106,18 @@ function eliminarCarpeta($carpeta)
             <button class="btn btn-secondary" onclick="mostrarOcultas()" title="Ver carpetas ocultas">
               👁️ Ver Ocultos
             </button>
-            <div class="dropdown">
-              <button class="btn btn-outline-dark dropdown-toggle d-none d-lg-inline-block" id="modoDropdownBtn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Opciones">
+            <div class="dropdown btn-group">
+              <button class="btn dropdown-toggle d-none d-lg-inline-block" id="modoDropdownBtn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 🌙
               </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow">
+
+              <ul class="dropdown-menu shadow">
+                <li><a id="opcionModoClaro" class="dropdown-item" href="#" onclick="activarModoClaro()">☀️ Modo Claro</a></li>
+                <li><a id="opcionModoOscuro" class="dropdown-item" href="#" onclick="activarModoOscuro()">🌙 Modo Oscuro</a></li>
                 <li>
-                  <button class="dropdown-item" onclick="toggleDarkMode()">
-                    <span class="modoOscuroTexto">🌙 Oscuro</span>
-                  </button>
+                  <hr class="dropdown-divider">
                 </li>
+                <li><a id="opcionModoAuto" class="dropdown-item" href="#" onclick="activarModoAutomatico()">🌗 Modo Automático</a></li>
               </ul>
             </div>
           </nav>
@@ -186,9 +190,10 @@ function eliminarCarpeta($carpeta)
       <button class="btn btn-warning w-100" onclick="abrirRaizLocalhost()">
         <i class="fas fa-folder-open me-1"></i> Carpeta Localhost
       </button>
-      <button class="btn btn-dark w-100" onclick="toggleDarkMode()">
-        <span class="modoOscuroTexto">🌙 Modo Oscuro</span>
-      </button>
+
+      <!-- Dentro del offcanvas -->
+      <button id="modoOffcanvasBtn" class="btn w-100 mb-2">🌙 Modo Oscuro</button>
+
       <button class="btn btn-secondary w-100" onclick="mostrarOcultas()">
         👁️ Ver carpetas ocultas
       </button>
@@ -197,4 +202,5 @@ function eliminarCarpeta($carpeta)
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="assets/js/funciones.js"></script>
 </body>
+
 </html>
