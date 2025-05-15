@@ -65,7 +65,8 @@ try {
             'success' => false,
             'message' => '
             <p><strong>No se pudo descargar WordPress.</strong></p>
-            <ul class="text-start">
+            <hr class="divider">
+            <ul class="text-start list-unstyled">
                 <li>🌐 Verifica tu conexión a Internet</li>
                 <li>📦 Revisa que la versión o idioma de WordPress sea válida</li>
                 <li>🔄 Intenta nuevamente en unos segundos</li>

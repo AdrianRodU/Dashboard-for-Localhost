@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Limpieza automática de archivos temporales de eliminación
     fetch(`${baseURL}/app/limpiar-progreso.php`)
         .then(() => {
-            showToast("🧹 Archivos temporales limpiados", "info", "custom-info");
+            // showToast("🧹 Archivos temporales limpiados", "info", "custom-info");
         });
 
     // OffCanvas Modos Claro - Oscuro
@@ -479,7 +479,7 @@ function renderCarpetas(foldersAnimadas = []) {
                 leftIcons.appendChild(i);
             });
 
-            // 🔹 Contenedor para el dropdown
+            // Contenedor para el dropdown
             const dropdown = document.createElement("div");
             dropdown.className = "dropdown ms-auto"; // <-- esto lo alinea a la derecha
 
@@ -836,7 +836,7 @@ function toggleDarkMode() {
 // Automáticamente cambia el modo claro y modo oscuro por horas
 function modoAutoPorHora() {
     const hora = new Date().getHours();
-    const esDeNoche = hora >= 20 || hora < 7;
+    const esDeNoche = hora >= 19 || hora < 7;
 
     const forzadoUsuario = localStorage.getItem(claveModoOscuro); // "true" o "false" o null
     const yaTieneDark = document.body.classList.contains("dark");
@@ -889,8 +889,21 @@ function cerrarYVer(ruta) {
 // Solicita al servidor el contenido de una carpeta y muestra un modal con su vista previa
 function verContenidoCarpeta(ruta = "") {
     fetch(`${baseURL}/preview/ver-archivos.php?ruta=${encodeURIComponent(ruta)}&_=${Date.now()}`)
-        .then((res) => res.json())
-        .then((data) => {
+        .then((res) => res.text())
+        .then((text) => {
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (error) {
+                console.error("❌ No se pudo interpretar la respuesta:", text);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error al leer los archivos",
+                    html: "La respuesta del servidor no se pudo interpretar correctamente.<br>Revisa el archivo <code>ver-archivos.php</code> o si el servidor está activo.",
+                });
+                return;
+            }
+
             const modal = document.createElement("div");
             modal.className = "modal fade";
             modal.tabIndex = -1;
@@ -1049,6 +1062,7 @@ function verContenidoCarpeta(ruta = "") {
             modal.addEventListener("hidden.bs.modal", () => modal.remove());
         });
 }
+
 
 // Muestra el contenido de un archivo dentro de un modal (PDF, imagen, texto plano)
 function mostrarArchivoEnModal(url, extension) {
@@ -1216,6 +1230,8 @@ function crearCarpeta() {
                         }
 
                         showToast(`Carpeta "${nombreCarpeta}" creada`, "success", "custom-success");
+                    }).catch(() => {
+                        showToast("❌ No se pudo conectar al servidor. Verifica tu conexión a Internet.", "error", "custom-error");
                     });
             });
         })
@@ -1321,6 +1337,9 @@ function renameFolder(folder, onCancel = null) {
                         }
 
                         showToast(`Carpeta renombrada a "${nuevoNombre}"`, "info", "custom-info");
+                    })
+                    .catch(() => {
+                        showToast("❌ No se pudo conectar al servidor. Verifica tu conexión a Internet.", "error", "custom-error");
                     });
             });
         })
@@ -1718,7 +1737,7 @@ function quitarTodosFavoritos() {
     updateFavorites(); // limpia favoritos
     renderCarpetas();  // no pasamos animaciones para evitar doble clase
 
-    // ✅ Aplicamos .carpeta-nueva manualmente con delay controlado
+    // Aplicamos .carpeta-nueva manualmente con delay controlado
     setTimeout(() => {
         carpetasQuitadas.forEach((folder) => {
             const tarjeta = document.querySelector(`[data-folder="${folder}"]`);
@@ -1765,7 +1784,6 @@ window.addEventListener("resize", () => {
 // Permite instalar la última versión de WordPress directo a la carpeta
 
 function instalarWordPress(folder) {
-    // 🔍 Verificar primero si ya hay una instalación
     fetch(`${baseURL}/app/validar-wordpress.php?carpeta=${encodeURIComponent(folder)}`)
         .then((res) => res.json())
         .then((data) => {
@@ -1779,105 +1797,96 @@ function instalarWordPress(folder) {
                     cancelButtonText: "Cerrar",
                     reverseButtons: true
                 }).then(result => {
-                    if (result.isConfirmed) {
-                        abrirEnWindows(folder);
-                    }
+                    if (result.isConfirmed) abrirEnWindows(folder);
                 });
                 return;
             }
 
-            // Si no hay WordPress instalado, mostrar el modal normal
             Swal.fire({
                 title: `Instalar WordPress en "${folder}"`,
                 html: `
-            <div class="swal2-form-group text-start mb-3">
-              <label class="form-label d-block mb-1"><i class="fa-solid fa-globe"></i> Idioma / Región</label>
-              <select id="idiomaWp" class="form-select">
-                <option value="latest" selected>🌐 Español (Internacional)</option>
-                <option value="es_PE">🇵🇪 Español (Perú)</option>
-                <option value="es_ES">🇪🇸 Español (España)</option>
-                <option value="es_MX">🇲🇽 Español (México)</option>
-                <option value="en_US">🇺🇸 Inglés (EEUU)</option>
-              </select>
-            </div>
+                  <div class="swal2-form-group text-start mb-3">
+                    <label class="form-label"><i class="fa-solid fa-globe"></i> Idioma / Región</label>
+                    <select id="idiomaWp" class="form-select">
+                      <option value="latest" selected>🌐 Español (Internacional)</option>
+                      <option value="es_PE">🇵🇪 Español (Perú)</option>
+                      <option value="es_ES">🇪🇸 Español (España)</option>
+                      <option value="es_MX">🇲🇽 Español (México)</option>
+                      <option value="en_US">🇺🇸 Inglés (EEUU)</option>
+                    </select>
+                  </div>
 
-            <div class="swal2-form-group mb-2 text-start">
-              <label class="form-label d-block mb-1"><i class="fa-solid fa-code-branch"></i> Versión</label>
-                 <select id="versionesWp" class="form-select flex-fill" disabled>
-                  <option value="">⏳ Cargando versiones...</option>
-                </select>
-            </div>
-          `,
+                  <div class="swal2-form-group text-start">
+                    <label class="form-label"><i class="fa-solid fa-code-branch"></i> Versión</label>
+                    <select id="versionesWp" class="form-select" disabled>
+                      <option value="">⏳ Cargando versiones...</option>
+                    </select>
+                  </div>
+                `,
                 showCancelButton: true,
                 confirmButtonText: "📥 Instalar",
                 cancelButtonText: "Cancelar",
                 didOpen: () => {
                     const selector = document.getElementById("versionesWp");
 
-                    if (selector) {
-                        fetch(`${baseURL}/app/obtener-versiones.php`)
-                            .then(async (res) => {
-                                const text = await res.text();
-                                try {
-                                    return JSON.parse(text);
-                                } catch (err) {
-                                    console.error("❌ Respuesta inesperada del servidor:", text);
-                                    throw new Error("El servidor no devolvió un JSON válido");
+                    fetch(`${baseURL}/app/obtener-versiones.php`)
+                        .then(res => res.text())
+                        .then(text => {
+                            try {
+                                return JSON.parse(text);
+                            } catch (err) {
+                                mostrarErrorBackend(
+                                    "⚠️ No se pudo cargar la lista de versiones.<br>Se usará <code>latest</code> por defecto.",
+                                    "Fallo al obtener versiones"
+                                );
+                                return ["latest"];
+                            }
+                        })
+                        .then(data => {
+                            selector.innerHTML = "";
+                            selector.disabled = false;
+                            const ultima = data[0];
+                            selector.appendChild(new Option(`latest (Recomendada - ${ultima})`, "latest"));
+                            data.forEach(ver => {
+                                if (ver !== ultima) {
+                                    selector.appendChild(new Option(ver, ver));
                                 }
-                            })
-
-                            .then(data => {
-                                selector.innerHTML = "";
-                                selector.disabled = false;
-
-                                const ultima = data[0];
-                                selector.appendChild(new Option(`latest (Recomendada - ${ultima})`, "latest"));
-
-                                data.forEach(ver => {
-                                    if (ver !== ultima) {
-                                        selector.appendChild(new Option(ver, ver));
-                                    }
-                                });
-
-                                selector.value = "latest";
-                            })
-                            .catch(() => {
-                                selector.innerHTML = `<option value="latest">latest</option>`;
-                                selector.disabled = false;
-
-                                Swal.fire({
-                                    icon: "warning",
-                                    title: "No se pudo cargar la lista de versiones",
-                                    text: "Se usará la opción 'latest' por defecto.",
-                                    toast: true,
-                                    position: "top-end",
-                                    timer: 4000,
-                                    showConfirmButton: false
-                                });
                             });
-                    }
+                            selector.value = "latest";
+                        })
+                        .catch(() => {
+                            selector.innerHTML = `<option value="latest">latest</option>`;
+                            selector.disabled = false;
+                            Swal.fire({
+                                icon: "warning",
+                                title: "No se pudo cargar versiones",
+                                text: "Se usará 'latest' por defecto.",
+                                toast: true,
+                                timer: 4000,
+                                position: "top-end",
+                                showConfirmButton: false
+                            });
+                        });
                 },
                 preConfirm: () => {
-                    const idioma = document.getElementById("idiomaWp").value;
-                    const version = document.getElementById("versionesWp").value || "latest";
-                    return { idioma, version };
+                    return {
+                        idioma: document.getElementById("idiomaWp").value,
+                        version: document.getElementById("versionesWp").value || "latest"
+                    };
                 }
             }).then((result) => {
                 if (!result.isConfirmed) return;
 
                 const { idioma, version } = result.value;
-                const selector = document.getElementById("versionesWp");
-                const textoSeleccionado = selector.options[selector.selectedIndex].text;
 
                 Swal.fire({
-                    title: `Descargando WordPress ${textoSeleccionado}`,
-                    text: `Por favor espera unos segundos ⏳`,
+                    title: `Descargando WordPress...`,
                     html: `
-                                        <p class="mb-2">Esto puede tardar unos segundos ⏳</p>
-                                        <div class="progress" style="height: 25px;">
-                                          <div id="barraInstalacion" class="progress-bar bg-success " role="progressbar" style="width: 0%">0%</div>
-                                        </div>
-                                      `,
+                      <p class="mb-2">Esto puede tardar unos segundos ⏳</p>
+                      <div class="progress" style="height: 25px;">
+                        <div id="barraInstalacion" class="progress-bar bg-success" role="progressbar" style="width: 0%">0%</div>
+                      </div>
+                    `,
                     allowOutsideClick: false,
                     showConfirmButton: false,
                     didOpen: () => {
@@ -1897,146 +1906,64 @@ function instalarWordPress(folder) {
                 });
 
                 fetch(`${baseURL}/app/instalar-wordpress.php?carpeta=${encodeURIComponent(folder)}&idioma=${idioma}&version=${version}`)
-                    .then(async (res) => {
-                        const text = await res.text();
-                        try {
-                            return JSON.parse(text);
-                        } catch (err) {
-                            console.error("❌ Error al parsear JSON:", text);
-                            throw new Error("Respuesta inesperada del servidor");
-                        }
-                    })
-                    .then((data) => {
+                    .then(res => res.json())
+                    .then(data => {
                         if (data.success) {
                             Swal.fire("WordPress instalado correctamente", "", "success");
+                        } else if (data.message.includes("No puedes instalar WordPress")) {
+                            mostrarAdvertenciaWordpress(folder, idioma, version, data);
+                        } else if (data.message.includes("ZipArchive")) {
+                            mostrarErrorBackend(data.message, "Extensión de PHP faltante");
                         } else {
-                            if (data.message.includes("No puedes instalar WordPress en una carpeta llamada")) {
-                                Swal.fire({
-                                    icon: "warning",
-                                    title: "⚠️ Carpeta no recomendada",
-                                    html: data.message,
-                                    showDenyButton: true,
-                                    showCancelButton: true,
-                                    confirmButtonText: "📥 Instalar de todas formas",
-                                    denyButtonText: "✏️ Cambiar nombre",
-                                    cancelButtonText: "Cancelar",
-                                    reverseButtons: false
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        // Instalar forzadamente con barra
-                                        Swal.fire({
-                                            title: `Descargando WordPress...`,
-                                            html: `
-                                        <p class="mb-2">Esto puede tardar unos segundos ⏳</p>
-                                        <div class="progress" style="height: 25px;">
-                                          <div id="barraInstalacion" class="progress-bar bg-success " role="progressbar" style="width: 0%">0%</div>
-                                        </div>
-                                      `,
-                                            allowOutsideClick: false,
-                                            showConfirmButton: false,
-                                            didOpen: () => {
-                                                Swal.showLoading();
-                                                let progreso = 0;
-                                                const barra = document.getElementById("barraInstalacion");
-                                                const avance = setInterval(() => {
-                                                    progreso += Math.floor(Math.random() * 8) + 3;
-                                                    if (progreso >= 100) progreso = 100;
-                                                    if (barra) {
-                                                        barra.style.width = progreso + "%";
-                                                        barra.textContent = progreso + "%";
-                                                    }
-                                                    if (progreso === 100) clearInterval(avance);
-                                                }, 300);
-                                            }
-                                        });
-
-                                        fetch(`${baseURL}/app/instalar-wordpress.php?carpeta=${encodeURIComponent(folder)}&idioma=${idioma}&version=${version}&forzar=1`)
-                                            .then(res => res.json())
-                                            .then(data => {
-                                                if (data.success) {
-                                                    Swal.fire("WordPress instalado correctamente", "", "success");
-                                                    // abrirEnWindows(folder);
-                                                } else {
-                                                    Swal.fire({
-                                                        icon: "warning",
-                                                        title: "Extensión de PHP faltante",
-                                                        html: data.message,
-                                                        customClass: {
-                                                            popup: "swal2-modal-carpetas"
-                                                        },
-                                                        showCancelButton: true,
-                                                        showConfirmButton: true,
-                                                        confirmButtonText: "🔂 Volver a Intentarlo",
-                                                        cancelButtonText: "Cerrar",
-                                                        reverseButtons: false
-                                                    }).then(result => {
-                                                        if (result.isConfirmed) {
-                                                            instalarWordPress(folder);
-                                                        }
-                                                    });
-                                                }
-                                            });
-
-                                    }
-                                    else if (data.message.includes("ZipArchive")) {
-                                        mostrarErrorBackend(data.message, "Extensión de PHP faltante");
-                                        return;
-                                    }
-                                    else if (result.isDenied) {
-                                        renameFolder(folder, () => {
-                                            // volver a mostrar la advertencia si canceló el rename
-                                            mostrarAdvertenciaWordpress(folder, idioma, version);
-                                        });
-                                    }
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "🚨 Problema de servidor",
-                                    html: data.message,
-                                    showCancelButton: true,
-                                    showConfirmButton: true,
-                                    confirmButtonText: "🔂 Volver a Intentarlo",
-                                    cancelButtonText: "Cerrar",
-                                    reverseButtons: false
-                                }).then(result => {
-                                    if (result.isConfirmed) {
-                                        // abrirEnWindows(folder);
-                                        instalarWordPress(folder);
-                                    }
-                                });
-                            }
+                            mostrarErrorBackend(data.message);
                         }
                     })
-                    .catch((error) => {
-                        Swal.fire("Error inesperado", error.message, "error");
+                    .catch((err) => {
+                        mostrarErrorBackend(
+                            "❌ No se pudo contactar al servidor.<br>🌐 Verifica tu conexión.",
+                            "Error de red"
+                        );
                     });
             });
         });
 }
 
+
 // Mostrar Avertencia de WordPress de manera Forzada
-function mostrarAdvertenciaWordpress(folder, idioma, version) {
+function mostrarAdvertenciaWordpress(folder, idioma = "latest", version = "latest", data = {}) {
+    if (data.message && data.message.includes("ZipArchive")) {
+        mostrarErrorBackend(data.message, "Extensión de PHP faltante");
+        return;
+    }
+
     Swal.fire({
         icon: "warning",
         title: "⚠️ Carpeta no recomendada",
-        html: data.message,
+        html: `
+          <p><b>Error:</b> No puedes instalar WordPress en una carpeta llamada
+          <span class="badge bg-danger">wordpress</span>.</p>
+          <p>Esto causaría una estructura duplicada como
+          <code>wordpress/wordpress/</code> y una instalación corrupta.</p>
+          <p>Por favor, usa un nombre distinto como
+          <span class="badge bg-primary">mi-wordpress</span> o
+          <span class="badge bg-secondary">sitio-wp</span>.</p>
+        `,
         showDenyButton: true,
         showCancelButton: true,
         confirmButtonText: "📥 Instalar de todas formas",
         denyButtonText: "✏️ Cambiar nombre",
-        cancelButtonText: "Cancelar"
-    }).then((result) => {
+        cancelButtonText: "Cancelar",
+        reverseButtons: false
+    }).then(result => {
         if (result.isConfirmed) {
-            // Instalar forzadamente con barra
             Swal.fire({
-                title: `Instalando WordPress...`,
+                title: `Descargando WordPress forzado`,
                 html: `
-            <p class="mb-2">Esto puede tardar unos segundos ⏳</p>
-            <div class="progress" style="height: 25px;">
-              <div id="barraInstalacion" class="progress-bar bg-success" role="progressbar" style="width: 0%">0%</div>
-            </div>
-          `,
+                  <p class="mb-2">Esto puede tardar unos segundos ⏳</p>
+                  <div class="progress" style="height: 25px;">
+                    <div id="barraInstalacion" class="progress-bar bg-success" role="progressbar" style="width: 0%">0%</div>
+                  </div>
+                `,
                 allowOutsideClick: false,
                 showConfirmButton: false,
                 didOpen: () => {
@@ -2060,20 +1987,27 @@ function mostrarAdvertenciaWordpress(folder, idioma, version) {
                 .then(data => {
                     if (data.success) {
                         Swal.fire("WordPress instalado correctamente", "", "success");
-                        // abrirEnWindows(folder);
+                    } else if (data.message.includes("ZipArchive")) {
+                        mostrarErrorBackend(data.message, "Extensión de PHP faltante");
                     } else {
-                        Swal.fire("🚨 Problema de servidor", data.message, "error");
+                        mostrarErrorBackend(data.message);
                     }
+                })
+                .catch(() => {
+                    mostrarErrorBackend(
+                        "❌ No se pudo contactar al servidor.<br>🌐 Verifica tu conexión.",
+                        "Error de red"
+                    );
                 });
 
         } else if (result.isDenied) {
             renameFolder(folder, () => {
-                // 🔁 Mostrar nuevamente la advertencia si se canceló el rename
                 mostrarAdvertenciaWordpress(folder, idioma, version);
             });
         }
     });
 }
+
 
 // Mostrar errores de los archivos php directamente
 function mostrarErrorBackend(mensaje, titulo = "Error del servidor") {
