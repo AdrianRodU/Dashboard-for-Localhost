@@ -7,13 +7,16 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 
 ## 🚀 Características principales
 
-- 📁 Explorador visual de carpetas en tu servidor local
-- ⭐ Agrega carpetas a favoritos para acceso rápido
-- 🙈 Oculta carpetas que no deseas ver en la interfaz
-- 🌓 Modo oscuro elegante y adaptable
-- 🕒 Reloj en tiempo real integrado
-- 📑 Vista previa de archivos incluyendo PDFs (inline)
-- 🧠 Íconos modernos personalizados por tipo de archivo (al estilo VS Code)
+- 📁 Explorador visual de carpetas locales (`htdocs`)
+- ⭐ Gestión de favoritos para acceso rápido
+- 🙈 Ocultar carpetas que no quieras ver
+- 🌓 Modo oscuro automático/manual con diseño adaptable
+- 🕒 Reloj en tiempo real con fecha
+- 🔍 Vista previa inteligente de carpetas y archivos
+- 📑 Soporte para PDF inline y enlaces externos
+- 🧠 Íconos personalizados según el tipo de archivo (como VSCode)
+- 📥 Instalación rápida de WordPress en cualquier carpeta
+- 🔐 Validaciones seguras y control total del entorno
 
 ---
 
@@ -40,18 +43,43 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 
 ```markdown
 📁 Root - Localhost/
-├── index.php → Interfaz principal del panel
-├── abrir-carpeta.php → Abre carpetas directamente en el explorador de Windows
-├── ver-archivos.php → Muestra subarchivos de una carpeta
-├── vista-previa.php → Modal para ver archivos e íconos personalizados
-├── .htaccess → Configuraciones de acceso para Apache
-├── assets/ → Carpeta de recursos visuales y lógicos (ver más abajo)
-│   ├── css/ → Estilos personalizados del panel
-│   ├── js/ → Scripts de interacción (localStorage, botones, modales, etc.)
-│   └── img/ → Vista previa del Dashboard
+├── index.php # Interfaz principal del dashboard
+├── app/
+│ ├── abrir-carpeta.php # Abre carpetas en el explorador de Windows
+│ ├── eliminar-carpeta-progresivo.php
+│ ├── instalar-wordpress.php
+│ ├── limpiar-progreso.php
+│ ├── progreso-carpeta.php
+│ ├── obtener-versiones.php
+│ ├── utils-wordpress.php
+│ ├── validar-wordpress.php
+│ └── verificar-contenido.php
+├── assets/
+│ ├── js/funciones.js # Lógica completa del sistema
+│ ├── css/style.css # Estilos visuales y modo oscuro
+│ └── img/preview.gif # Vista previa del sistema
 ```
 
 🧼 Nota: La carpeta `/assets` se oculta automáticamente desde el código en el `index.php` para no saturar la interfaz visual porque no es relevante en la navegación diaria. Solo se accede a través del código fuente.
+
+---
+
+## 🔧 ¿Para qué sirve?
+
+- Este dashboard está pensado para desarrolladores que:
+- Tienen muchos proyectos en htdocs
+- Quieren orden visual, accesos rápidos y herramientas útiles
+- Desean una alternativa más profesional que el simple listado de carpetas por defecto
+
+---
+
+### 📌 ¿Cómo instalarlo?
+
+- Descarga o clona este repositorio en htdocs (por ejemplo, C:/xampp/htdocs/Git-Local)
+- Accede desde tu navegador a:
+  - http://localhost/
+
+¡Empieza a explorar, gestionar y mejorar tus carpetas locales!
 
 ---
 

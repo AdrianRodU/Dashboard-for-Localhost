@@ -76,10 +76,7 @@ function eliminarCarpeta($carpeta)
 </head>
 
 <body>
-  <!-- <div class="position-fixed top-0 end-0 m-3 d-flex flex-column gap-2" style="z-index:1000;">
-    <button class="btn btn-outline-dark" onclick="toggleDarkMode()" title="Modo oscuro">🌙</button>
-    <button class="btn btn-outline-secondary" onclick="mostrarOcultas()" title="Mostrar carpetas ocultas">👁️</button>
-  </div> -->
+
   <div class="container py-4 contenedor-central">
     <header class="mb-4">
       <div class="container-fluid px-0">
@@ -91,17 +88,17 @@ function eliminarCarpeta($carpeta)
           </button>
           <!-- Menú normal en escritorio -->
           <nav class="d-none d-lg-flex gap-2 align-items-center flex-wrap">
-            <a class="btn btn-outline-primary" href="http://localhost/dashboard/" target="_blank">
-              <i class="fas fa-chart-line me-1"></i> Dashboard
+            <a class="btn btn-success" href="#" onclick="abrirRaizLocalhost()" title="Abrir carpeta raíz de localhost">
+              <i class="fas fa-folder-open me-1"></i> Localhost
             </a>
+            <!-- <a class="btn btn-outline-primary" href="http://localhost/dashboard/" target="_blank">
+              <i class="fas fa-chart-line me-1"></i> Dashboard
+            </a> -->
             <a class="btn btn-outline-primary" href="http://localhost/phpmyadmin/" target="_blank">
               <i class="fas fa-database me-1"></i> phpMyAdmin
             </a>
             <a class="btn btn-outline-primary" href="/phpinfo.php" target="_blank">
               <i class="fas fa-code me-1"></i> PHP Info
-            </a>
-            <a class="btn btn-success" href="#" onclick="abrirRaizLocalhost()" title="Abrir carpeta raíz de localhost">
-              <i class="fas fa-folder-open me-1"></i> Localhost
             </a>
             <button class="btn btn-secondary" onclick="mostrarOcultas()" title="Ver carpetas ocultas">
               👁️ Ver Ocultos
@@ -139,10 +136,7 @@ function eliminarCarpeta($carpeta)
       <p class="mb-0 fs-5">No hay ninguna carpeta agregada en favoritos</p>
     </div>
   </div>
-  <!--
-  <div class="container contenedor-central">
-    <hr class="divider">
-  </div> -->
+
   <div class="container mb-4 contenedor-central">
     <h3 class="border-bottom pb-3 mb-3"> Carpetas locales <span id="localCount" class="badge bg-primary"></span></h3>
     <div class="mb-3">
@@ -156,7 +150,7 @@ function eliminarCarpeta($carpeta)
     </div>
     <div class="row g-3" id="folderGrid">
       <?php
-      // Render de carpetas desactivado. Se usará JavaScript para mostrar carpetas dinámicamente.
+      // Se usará JavaScript para mostrar carpetas dinámicamente.
       ?>
     </div>
   </div>

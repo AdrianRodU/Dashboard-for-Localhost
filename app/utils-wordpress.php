@@ -53,21 +53,21 @@ function validarInstalacionWordPress($ruta)
 
     $mensaje = "<p>Ya se detectó una instalación previa de ";
     $mensaje .= $wpVersion
-        ? "<b>WordPress</b> <span class='badge bg-primary'>v{$wpVersion}</span>.</p>"
+        ? "<b>WordPress</b> <span class='badge bg-primary'>v{$wpVersion}</span></p>"
         : "<span class='badge bg-secondary'>versión no detectada</span></p>";
 
     if (!$configExiste) {
         $mensaje .= "<p>El archivo <span class='badge bg-warning text-dark'>wp-config.php</span> no ha sido configurado todavía.</p>";
     }
 
-    // ✅ Detectar carpeta "wordpress/" residual
+    // Detectar carpeta "wordpress/" residual
     if (is_dir($ruta . '/wordpress')) {
         $mensaje .= "<p>⚠️ Se detectó una subcarpeta <span class='badge bg-danger'>wordpress/</span> que sugiere una instalación incompleta.</p>";
     }
 
     if ($hayExtras) {
-        $mensaje .= "<p><span class='badge bg-danger mb-1 d-inline-block'>⚠️ Archivos adicionales detectados:</span></p><ul class='mt-2 mb-1 list-unstyled' style='padding-left: 1.2rem; font-size: 0.9rem;'>";
-        $primeros = array_slice($extras, 0, 4);
+        $mensaje .= "<hr class='divider'><p><span class='badge bg-danger mb-1 d-inline-block'>⚠️ Archivos adicionales detectados:</span></p><p><ul class='mt-2 mb-1 list-unstyled' style='padding-left: 1.2rem; font-size: 0.9rem;'>";
+        $primeros = array_slice($extras, 0, 3);
         foreach ($primeros as $archivo) {
             $ext = pathinfo($archivo, PATHINFO_EXTENSION);
             $icono = match (true) {
@@ -78,10 +78,13 @@ function validarInstalacionWordPress($ruta)
             };
             $mensaje .= "<li>$icono $archivo</li>";
         }
-        if (count($extras) > 4) {
-            $mensaje .= "<li>…</li>";
+
+        $restantes = count($extras) - count($primeros);
+        if ($restantes > 0) {
+            $mensaje .= "<li>… y <b>{$restantes} más</b></li>";
         }
-        $mensaje .= "</ul>";
+
+        $mensaje .= "</ul></p><hr class='divider mt-4'>";
     }
 
     return ['instalado' => true, 'mensaje' => $mensaje];
