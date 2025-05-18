@@ -67,9 +67,9 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 ## 🔧 ¿Para qué sirve?
 
 - Este dashboard está pensado para desarrolladores que:
-- Tienen muchos proyectos en htdocs
-- Quieren orden visual, accesos rápidos y herramientas útiles
-- Desean una alternativa más profesional que el simple listado de carpetas por defecto
+  - Tienen muchos proyectos en htdocs
+  - Quieren orden visual, accesos rápidos y herramientas útiles
+  - Desean una alternativa más profesional que el simple listado de carpetas por defecto
 
 ---
 
