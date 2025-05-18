@@ -75,7 +75,7 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 
 ### 📌 ¿Cómo instalarlo?
 
-- Descarga o clona este repositorio en htdocs (por ejemplo, C:/xampp/htdocs/Git-Local)
+- Descarga o clona este repositorio en htdocs (por ejemplo, C:/xampp/htdocs/)
 - Accede desde tu navegador a:
   - http://localhost/
 
