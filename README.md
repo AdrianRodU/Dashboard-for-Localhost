@@ -53,11 +53,14 @@ Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`
 │ ├── obtener-versiones.php
 │ ├── utils-wordpress.php
 │ ├── validar-wordpress.php
+│ ├── verificar-url.php
 │ └── verificar-contenido.php
 ├── assets/
 │ ├── js/funciones.js # Lógica completa del sistema
 │ ├── css/style.css # Estilos visuales y modo oscuro
 │ └── img/preview.gif # Vista previa del sistema
+├── preview/
+│ └── ver-archivos.php
 ```
 
 🧼 Nota: La carpeta `/assets` se oculta automáticamente desde el código en el `index.php` para no saturar la interfaz visual porque no es relevante en la navegación diaria. Solo se accede a través del código fuente.
