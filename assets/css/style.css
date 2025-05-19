@@ -67,6 +67,12 @@ body:not(.dark) .card:hover {
 .card i.fa-ellipsis-v {
   color: #ffffff;
 }
+
+.card i.fa-link {
+  color: #17a2b8; /* celeste */
+  font-size: 0.9rem;
+}
+
 /* 🎨 Hover individual por ícono */
 
 .card i.fa-folder-open:hover {
