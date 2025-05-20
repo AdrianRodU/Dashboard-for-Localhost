@@ -1333,8 +1333,8 @@ function renameFolder(folder, onCancel = null) {
                 <input id="nuevoNombreInput" class="swal2-input" placeholder="Nombre de carpeta" value="${folder}">
                 </div>
                 <hr class="divider mt-3">
-                <div class="form-check text-start ms-1 mt-2">
-                    <input type="checkbox" class="form-check-input" id="activarURL" ${urlActual ? "checked" : ""}>
+                <div class="form-check d-flex align-items-center justify-content-center mt-3 me-4">
+                    <input type="checkbox" class="form-check-input me-2" id="activarURL" ${urlActual ? "checked" : ""}>
                     <label class="form-check-label" for="activarURL">Asignar URL personalizada</label>
                 </div>
                 <hr class="divider mt-3">
