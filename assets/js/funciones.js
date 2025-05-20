@@ -1536,13 +1536,6 @@ function renameFolder(folder, onCancel = null) {
 
                     localStorage.setItem(claveURLs, JSON.stringify(urlsGuardadas));
 
-                    const tarjeta = document.querySelector(`[data-folder="${nuevo}"]`);
-
-                    if (tarjeta) {
-                        tarjeta.classList.add("carpeta-renombrada");
-                        setTimeout(() => tarjeta.classList.remove("carpeta-renombrada"), 4000);
-                    }
-
                     // Detectar qué cambió
                     const renombrado = nuevo !== folder;
                     const urlExistíaAntes = Boolean(urlActual);
@@ -1558,6 +1551,14 @@ function renameFolder(folder, onCancel = null) {
                     renderCarpetas(nuevo);
                     updateFavorites();
                     activarTooltips();
+
+                    // Activamos el efecto a la carpeta modificada
+                    const tarjeta = document.querySelector(`[data-folder="${nuevo}"]`);
+
+                    if (tarjeta) {
+                        tarjeta.classList.add("carpeta-renombrada");
+                        setTimeout(() => tarjeta.classList.remove("carpeta-renombrada"), 4000);
+                    }
 
                     // Mensaje según el cambio real
                     if (renombrado && urlAgregada) {
