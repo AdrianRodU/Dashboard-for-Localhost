@@ -1,4 +1,4 @@
-# 📂 LocalHost Dashboard ⚡
+# 📂 Dashboard for LocalHost ⚡
 
 **LocalHost Dashboard** es un panel de control visual hecho en PHP para desarrolladores que trabajan en local.
 Permite navegar de forma organizada por las carpetas del entorno local (`htdocs`), ocultar contenido innecesario y destacar proyectos favoritos. Además contiene efectos visuales para mejorar la experiencia.
