@@ -1383,7 +1383,12 @@ function renameFolder(folder, onCancel = null) {
                 const visible = chk.checked;
                 inputURL.style.display = visible ? "block" : "none";
                 estadoURL.style.display = visible ? "block" : "none";
-                if (visible) validarURL(inputURL.value);
+
+                if (visible) {
+                    validarURL(inputURL.value);
+                    inputURL.focus();
+                }
+
             });
 
             // Validar mientras escribe
@@ -2367,71 +2372,114 @@ function validarURL(url) {
     const confirmBtn = Swal.getConfirmButton();
     if (!estadoURL || !input || !confirmBtn) return;
 
+    const resultado = validarFormatoVisualURL(url);
+
+    if (!resultado.valido) {
+        estadoURL.textContent = resultado.mensaje;
+        estadoValidoURL = false;
+        confirmBtn.disabled = true;
+
+        if (
+            resultado.mensaje.includes("✏️") ||
+            resultado.mensaje.includes("⏳") ||
+            resultado.mensaje.includes("verificar")
+        ) {
+            // Mensaje neutro
+            estadoURL.style.color = "gray";
+            input.style.border = "";
+            input.style.boxShadow = "";
+        } else if (
+            resultado.mensaje.includes("⚠️")
+        ) {
+            // Advertencia → amarillo
+            estadoURL.style.color = "#e0a800";
+            input.style.border = "1px solid #e0a800";
+            input.style.boxShadow = "0 0 0 0.2rem rgba(220, 195, 53, 0.25)";
+        } else {
+            // Error real → rojo
+            estadoURL.style.color = "#dc3545";
+            input.style.border = "1px solid #dc3545";
+            input.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,.25)";
+        }
+
+        return;
+    }
+
+
+    // 🕐 Verificando en backend
     estadoURL.textContent = "⏳ Verificando...";
     estadoURL.style.color = "gray";
     input.style.border = "";
+    input.style.boxShadow = "";
     estadoValidoURL = false;
     confirmBtn.disabled = true;
 
-    if (!url.trim()) {
-        estadoURL.textContent = "✏️ Escribe una URL para verificar";
-        estadoURL.style.color = "gray";
-        input.style.border = "";
-        estadoValidoURL = false;
-        confirmBtn.disabled = true;
-        return;
-    }
-
-    // Mostrar mensaje informativo si está escribiendo pero aún no comienza con http o https
-    if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
-        estadoURL.textContent = "⚠️ Incluye http:// o https:// al inicio";
-        estadoURL.style.color = "#ffc107";
-        input.style.border = "1px solid #ffc107";
-        input.style.boxShadow = "0 0 0 0.2rem rgba(220, 195, 53, 0.25)";
-        estadoValidoURL = false;
-        confirmBtn.disabled = true;
-        return;
-    }
-
-
-    // Validación de formato
-    if (!/^https?:\/\/[^ "]+$/.test(url)) {
-        estadoURL.textContent = "❌ URL inválida";
-        estadoURL.style.color = "#dc3545";
-        input.style.border = "1px solid #dc3545";
-        input.style.boxShadow = "0 0 0 0.2rem rgba(220,53,69,.25)";
-        estadoValidoURL = false;
-        confirmBtn.disabled = true;
-        return;
-    }
-
-    // 🔁 Consultar PHP backend
     fetch(`${baseURL}/app/verificar-url.php?url=${encodeURIComponent(url)}`)
         .then(res => res.json())
         .then(data => {
+            estadoURL.textContent = data.message;
+
             if (data.success) {
-                estadoURL.textContent = "URL correcta ✅ ";
+                // Éxito
                 estadoURL.style.color = "#28a745";
                 input.style.border = "1px solid #28a745";
                 input.style.boxShadow = "0 0 0 0.2rem rgba(74, 211, 56, 0.25)";
                 estadoValidoURL = true;
                 confirmBtn.disabled = false;
+
+                confirmBtn.removeAttribute("title");
+                confirmBtn.removeAttribute("data-bs-toggle");
+                confirmBtn.removeAttribute("data-bs-placement");
+                bootstrap.Tooltip.getInstance(confirmBtn)?.dispose();
+
+            } else if (data.message.includes("HTTP 500")) {
+                // Error interno, pero permitir guardar
+                // estadoURL.innerHTML = data.message + " <span class='text-muted ms-2'>(Puedes guardar de todas formas)</span>";
+                estadoURL.textContent += " Puedes guardar de todas formas.";
+                estadoURL.style.color = "#e0a800";
+                input.style.border = "1px solid #e0a800";
+                input.style.boxShadow = "0 0 0 0.2rem rgba(220, 195, 53, 0.25)";
+                estadoValidoURL = true;
+                confirmBtn.disabled = false;
+
+                // 🟡 Agregar tooltip al botón
+                confirmBtn.setAttribute("title", "⚠️ Esta URL tiene errores PHP internos. Si deseas puedes guardar de todas formas.");
+                confirmBtn.setAttribute("data-bs-toggle", "tooltip");
+                confirmBtn.setAttribute("data-bs-placement", "top");
+                new bootstrap.Tooltip(confirmBtn);
+
+
+                // Activar tooltip de Bootstrap
+                new bootstrap.Tooltip(confirmBtn);
+
             } else {
-                estadoURL.textContent = `⚠️ ${data.message}`;
+                // Otros errores → se bloquea
                 estadoURL.style.color = "#e0a800";
                 input.style.border = "1px solid #e0a800";
                 input.style.boxShadow = "0 0 0 0.2rem rgba(220, 195, 53, 0.25)";
                 estadoValidoURL = false;
                 confirmBtn.disabled = true;
             }
+
         })
         .catch(() => {
-            estadoURL.textContent = "⚠️ Error al verificar";
+            estadoURL.textContent = "⚠️ No se pudo contactar con el servidor.";
             estadoURL.style.color = "#e0a800";
             input.style.border = "1px solid #e0a800";
+            input.style.boxShadow = "0 0 0 0.2rem rgba(220, 195, 53, 0.25)";
             estadoValidoURL = false;
             confirmBtn.disabled = true;
         });
+}
+
+
+
+function validarFormatoVisualURL(url) {
+    if (!url.trim()) return { valido: false, mensaje: "✏️ Escribe una URL para verificar" };
+    if (!url.startsWith("http://") && !url.startsWith("https://")) return { valido: false, mensaje: "⚠️ Incluye http:// o https:// al inicio" };
+    if (url.endsWith(".")) return { valido: false, mensaje: "❌ La URL no debe terminar con un punto." };
+    if (!/^https?:\/\/[^ "]+$/.test(url)) return { valido: false, mensaje: "❌ URL inválida" };
+    return { valido: true };
 }
 
 
